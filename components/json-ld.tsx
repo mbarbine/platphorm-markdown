@@ -1,7 +1,7 @@
 import { siteConfig } from "@/lib/platphorm/config"
 
 interface JsonLdProps {
-  type?: "WebApplication" | "SoftwareApplication" | "Article" | "FAQPage" | "Organization"
+  type?: "WebApplication" | "SoftwareApplication" | "Article" | "FAQPage" | "Organization" | "WebSite" | "WebPage" | "TechArticle" | "BreadcrumbList"
   data?: Record<string, unknown>
 }
 
@@ -52,6 +52,47 @@ export function JsonLd({ type = "WebApplication", data = {} }: JsonLdProps) {
       ],
       ...data,
     },
+    WebSite: {
+      ...baseSchema,
+      name: siteConfig.name,
+      url: siteConfig.url,
+      description: siteConfig.description,
+      publisher: {
+        "@type": "Organization",
+        name: siteConfig.creator,
+      },
+      ...data,
+    },
+    WebPage: {
+      ...baseSchema,
+      name: data.name || siteConfig.name,
+      url: data.url || siteConfig.url,
+      description: data.description || siteConfig.description,
+      isPartOf: {
+        "@type": "WebSite",
+        name: siteConfig.name,
+        url: siteConfig.url,
+      },
+      ...data,
+    },
+    TechArticle: {
+      ...baseSchema,
+      headline: data.headline || `${siteConfig.name} Documentation`,
+      description: data.description || siteConfig.description,
+      author: {
+        "@type": "Organization",
+        name: siteConfig.creator,
+      },
+      publisher: {
+        "@type": "Organization",
+        name: siteConfig.creator,
+      },
+      ...data,
+    },
+    BreadcrumbList: {
+      ...baseSchema,
+      itemListElement: data.items || [],
+    },
     Article: {
       ...baseSchema,
       headline: data.headline || siteConfig.name,
@@ -72,7 +113,7 @@ export function JsonLd({ type = "WebApplication", data = {} }: JsonLdProps) {
     },
     FAQPage: {
       ...baseSchema,
-      mainEntity: data.questions || [],
+      mainEntity: data.questions || data.mainEntity || [],
     },
   }
 
@@ -84,6 +125,15 @@ export function JsonLd({ type = "WebApplication", data = {} }: JsonLdProps) {
       }}
     />
   )
+}
+
+export function generateBreadcrumbSchema(items: { name: string; url: string }[]) {
+  return items.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    item: item.url,
+  }))
 }
 
 export function generateFAQSchema(faqs: { question: string; answer: string }[]) {

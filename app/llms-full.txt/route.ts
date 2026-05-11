@@ -1,180 +1,80 @@
-import { siteConfig } from "@/lib/platphorm/config"
 import { openApiSpec } from "@/lib/api/openapi"
+import { getModelStatus } from "@/lib/model/markdown-model"
+import { siteConfig } from "@/lib/platphorm/config"
+import { getAuthPolicy } from "@/lib/platform/auth"
+import { discoveryComplianceSummary, markdownTools, mcpPrompts, mcpResources, publicRoutes, routeComplianceSummary } from "@/lib/platform/routes"
 
 export async function GET() {
-  const content = `# ${siteConfig.name} - Complete Documentation
-
-> ${siteConfig.description}
+  const content = `# ${siteConfig.name} - Full LLM Context
 
 Version: ${siteConfig.version}
-Created by: ${siteConfig.creator}
+Base URL: ${siteConfig.url}
 
----
+## Role
 
-## Overview
+MarkdownTree is a browser-first Markdown editor, visual document graph, parser, outline generator, live preview, export utility, structure analyzer, and Markdown API/MCP tool surface.
 
-MarkdownTree is a next-generation markdown visualization platform that transforms plain text documents into interactive graph representations. It combines the simplicity of markdown with the power of visual programming and AI assistance.
+It is not Trace, Docs, MCP, Claws, Evals, BrowserOps, Sandbox, Webhooks, AgentUI, Base, Monitor, Atlas, Spec, Sheets, SVG, ASCII, Emoji, JSON, XML, or Phorm. Those are integrations or adjacent tools.
 
-## Core Capabilities
+## Public-Safe Behavior
 
-### 1. Markdown Parsing
-- Full CommonMark specification support
-- GitHub Flavored Markdown (GFM) extensions
-- Table, task list, and strikethrough support
-- Footnotes and definition lists
+- Markdown content is parsed locally in the browser for the editor and graph.
+- Public API requests parse or transform submitted Markdown and return the result; they do not claim to persist documents.
+- Local non-sensitive drafts are browser-local.
+- Share URLs are bounded and URL-only.
+- Markdown, HTML, and JSON export are active.
+- PDF and PNG export return explicit degraded states.
+- Model-backed AI endpoints return degraded states unless a backend provider is configured.
 
-### 2. Graph Visualization
-- Real-time AST to graph transformation
-- Interactive node manipulation
-- Hierarchical layout algorithms
-- Zoom, pan, and focus controls
-- Node type filtering
+## Auth
 
-### 3. AI Features
-- Grammar and style suggestions
-- Content expansion and summarization
-- Table of contents generation
-- Smart formatting
+${JSON.stringify(getAuthPolicy(), null, 2)}
 
-### 4. Export Formats
-${siteConfig.features.export.map(f => `- ${f.toUpperCase()}`).join("\n")}
+## Route Compliance
 
----
+${JSON.stringify(routeComplianceSummary(), null, 2)}
 
-## API Reference
+## Discovery Compliance
 
-### Authentication
-Most endpoints are public. Rate limited to 60 requests/minute per IP.
+${JSON.stringify(discoveryComplianceSummary(), null, 2)}
 
-### Base URL
-\`${siteConfig.url}${siteConfig.api.basePath}\`
+## Public Routes
 
-### Endpoints
+${publicRoutes.map((route) => `- ${route.path}: ${route.description}`).join("\n")}
 
-#### Health Check
-\`GET /api/health\`
+## MCP Tools
 
-Returns service status and version information.
+${markdownTools.map((tool) => `- ${tool}`).join("\n")}
 
-#### API Documentation
-\`GET /api/docs\`
+## MCP Resources
 
-Returns OpenAPI 3.1 specification.
+${mcpResources.map((resource) => `- ${resource}`).join("\n")}
 
-#### Transform Markdown
-\`POST /api/v1/transform\`
+## MCP Prompts
 
-Converts markdown to graph representation.
+${mcpPrompts.map((prompt) => `- ${prompt}`).join("\n")}
 
-**Request Body:**
-\`\`\`json
-{
-  "markdown": "string (required)",
-  "options": {
-    "includeMetadata": boolean,
-    "flattenInline": boolean
-  }
-}
-\`\`\`
+## Model State
 
-**Response:**
-\`\`\`json
-{
-  "success": true,
-  "data": {
-    "nodes": [
-      {
-        "id": "string",
-        "type": "heading|paragraph|code|link|...",
-        "text": "string",
-        "depth": number,
-        "parent": "string|null"
-      }
-    ],
-    "edges": [
-      {
-        "id": "string",
-        "from": "string",
-        "to": "string"
-      }
-    ],
-    "outline": [...],
-    "stats": {
-      "nodeCount": number,
-      "wordCount": number,
-      "charCount": number,
-      "headingCount": number,
-      "linkCount": number,
-      "imageCount": number,
-      "codeBlockCount": number
-    }
-  }
-}
-\`\`\`
+${JSON.stringify(getModelStatus(), null, 2)}
 
-#### Export Document
-\`POST /api/v1/export\`
-
-Export markdown to various formats.
-
-**Request Body:**
-\`\`\`json
-{
-  "markdown": "string (required)",
-  "format": "markdown|json|html"
-}
-\`\`\`
-
----
-
-## Node Types
-
-| Type | Description | Color |
-|------|-------------|-------|
-| heading | Document headings (H1-H6) | Emerald |
-| paragraph | Text paragraphs | Slate |
-| code | Inline code | Violet |
-| codeBlock | Code blocks | Violet |
-| link | Hyperlinks | Blue |
-| image | Images | Pink |
-| list | Lists (ul/ol) | Amber |
-| listItem | List items | Amber |
-| blockquote | Quotations | Purple |
-| table | Tables | Teal |
-| thematicBreak | Horizontal rules | Gray |
-
----
-
-## OpenAPI Specification
+## OpenAPI
 
 \`\`\`json
 ${JSON.stringify(openApiSpec, null, 2)}
 \`\`\`
 
----
+## Trust Policy
 
-## Links
+${siteConfig.trustPolicyLine}
 
-- Production: ${siteConfig.url}
-- Editor: ${siteConfig.url}/editor
-- API Docs: ${siteConfig.url}/api/docs
-- GitHub: ${siteConfig.links.github}
-- RSS Feed: ${siteConfig.url}/feed.xml
-- Sitemap: ${siteConfig.url}/sitemap.xml
-
-## Support
-
-Coinbase Wallet: ${siteConfig.coinbase}
-
----
-
-Last updated: ${new Date().toISOString()}
+Updated: ${new Date().toISOString()}
 `
 
   return new Response(content, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "public, max-age=86400",
+      "Cache-Control": "public, max-age=3600",
     },
   })
 }

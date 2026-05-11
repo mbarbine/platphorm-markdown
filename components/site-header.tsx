@@ -14,12 +14,7 @@ import {
   Moon, 
   Sun, 
   Menu, 
-  Download, 
-  Upload, 
-  Settings, 
-  FileText,
   Github,
-  Sparkles,
   BookOpen,
   Code2
 } from "lucide-react"
@@ -57,31 +52,6 @@ export function SiteHeader() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {/* File Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8" title="File menu" aria-label="File menu">
-                <FileText className="h-4 w-4" />
-                <span className="sr-only">File menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Upload className="mr-2 h-4 w-4" />
-                Import Markdown
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Sparkles className="mr-2 h-4 w-4" />
-                AI Enhance
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {/* Docs */}
           <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Documentation" aria-label="Documentation">
             <Link href="/docs">

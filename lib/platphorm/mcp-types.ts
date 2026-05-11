@@ -81,7 +81,7 @@ export const mcpConfig: MCPConfig = {
           name: "format",
           type: "string",
           required: true,
-          description: "Export format: markdown, json, html, pdf"
+          description: "Export format: markdown, json, html. PDF and PNG return degraded states until implemented."
         }
       ],
       response: {
@@ -91,7 +91,7 @@ export const mcpConfig: MCPConfig = {
     },
     {
       name: "aiEnhance",
-      description: "AI-powered markdown enhancement",
+      description: "Model-backed markdown enhancement when configured; otherwise returns an honest degraded state",
       path: "/api/v1/ai/enhance",
       method: "POST",
       parameters: [
@@ -105,7 +105,7 @@ export const mcpConfig: MCPConfig = {
           name: "action",
           type: "string",
           required: true,
-          description: "Enhancement action: summarize, expand, format, translate"
+          description: "Enhancement action: improve, summarize, expand, fix-grammar, generate-toc"
         }
       ],
       response: {

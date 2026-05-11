@@ -16,7 +16,7 @@ export function SiteFooter() {
               <span>{siteConfig.name}</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              Transform markdown into interactive graph visualizations with AI-powered enhancements.
+              Browser-first Markdown editor, parser, preview, graph viewer, and public API utility.
             </p>
             <div className="flex items-center gap-3">
               <a 

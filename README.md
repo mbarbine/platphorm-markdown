@@ -13,10 +13,10 @@
 
 - ✏️ **Monaco-powered markdown editor** — full IntelliSense, syntax highlighting, and keyboard shortcuts
 - 📊 **Interactive graph visualization** — explore document structure as a node graph with ReactFlow
-- 🤖 **AI-powered enhancements** — smart suggestions, summarization, and chat via Vercel AI SDK
+- 🤖 **Model scaffolding** — deterministic table-of-contents support plus honest degraded states when no backend model provider is configured
 - 🔄 **Four view modes** — Editor · Split · Graph · Preview
 - 📤 **Export anywhere** — Markdown, HTML, and JSON output
-- 🔗 **Shareable URLs** — share documents instantly, no account needed
+- 🔗 **Bounded share URLs** — encode public-safe Markdown in the URL without claiming server-side storage
 - 🌐 **I18N ready** — internationalization support baked in
 - 🔌 **MCP-compatible REST API** — connected to [mcp.platphormnews.com](https://mcp.platphormnews.com) — integrate with external tools and agents
 - 🎨 **Dark / light theme** — respects system preference with manual toggle
@@ -33,8 +33,8 @@
 ## ⚡ Quick Start
 
 ```sh
-git clone https://github.com/mbarbine/markdown-webby.git
-cd markdown-webby
+git clone https://github.com/mbarbine/platphorm-markdown.git
+cd platphorm-markdown
 npm install
 npm run dev
 ```
@@ -63,10 +63,14 @@ MarkdownTree exposes a lightweight REST API for programmatic access:
 | Endpoint | Description |
 |----------|-------------|
 | `GET /api/health` | Health check |
-| `POST /api/v1/transform` | Transform markdown to graph data |
+| `POST /api/v1/parse` | Parse Markdown to graph, outline, and stats |
+| `POST /api/v1/transform` | Transform Markdown to graph data |
+| `POST /api/v1/outline` | Generate a Markdown heading outline |
+| `POST /api/v1/stats` | Calculate Markdown document stats |
 | `POST /api/v1/export` | Export document (Markdown, HTML, JSON) |
-| `POST /api/v1/ai/enhance` | AI-powered document enhancement |
-| `POST /api/v1/ai/chat` | Conversational AI assistant |
+| `GET /api/v1/ai/status` | Inspect backend model availability |
+| `POST /api/v1/ai/toc` | Generate a deterministic table of contents |
+| `POST /api/v1/ai/enhance` | Model-backed document enhancement when configured; degraded otherwise |
 | `GET /api/docs` | Interactive API documentation |
 
 ---
@@ -84,7 +88,7 @@ MarkdownTree is proudly registered on the [Platphorm News Network](https://platp
 ## 📁 Project Structure
 
 ```
-markdown-webby/
+platphorm-markdown/
 ├── app/            # Next.js app router pages & layouts
 ├── components/     # Reusable React components
 ├── hooks/          # Custom React hooks

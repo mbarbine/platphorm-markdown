@@ -1,10 +1,42 @@
 import { siteConfig } from "@/lib/platphorm/config"
 
+const publicSafe = "Public-safe Phase 1 endpoint. PLATPHORM_API_KEY is not required unless PLATPHORM_REQUIRE_API_KEY is enabled for future protected actions."
+
+function postOperation(summary: string, description: string, schema: string) {
+  return {
+    summary,
+    description,
+    requestBody: {
+      required: true,
+      content: {
+        "application/json": {
+          schema: { $ref: `#/components/schemas/${schema}` },
+        },
+      },
+    },
+    responses: {
+      "200": {
+        description: "Operation completed or returned an honest degraded state.",
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/ApiResponse" },
+          },
+        },
+      },
+      "400": { description: "Invalid request." },
+      "429": { description: "Rate limited." },
+      "501": { description: "Feature scaffolded but unavailable in Phase 1." },
+      "503": { description: "Backend model provider unavailable." },
+    },
+  }
+}
+
 export const openApiSpec = {
   openapi: "3.1.0",
   info: {
     title: `${siteConfig.name} API`,
-    description: siteConfig.description,
+    description:
+      "Public-safe Markdown parsing, graph transformation, outline, stats, export, share, AI degraded-state, and MCP tooling for MarkdownTree.",
     version: siteConfig.version,
     contact: {
       name: siteConfig.creator,
@@ -20,117 +52,147 @@ export const openApiSpec = {
       url: siteConfig.url,
       description: "Production",
     },
-    {
-      url: "http://localhost:3000",
-      description: "Development",
-    },
   ],
   tags: [
-    { name: "Health", description: "Service health endpoints" },
-    { name: "Documents", description: "Markdown document operations" },
-    { name: "Transform", description: "Markdown transformation endpoints" },
-    { name: "AI", description: "AI-powered features" },
-    { name: "Export", description: "Export and conversion endpoints" },
+    { name: "Health", description: "Health and compliance state" },
+    { name: "Markdown", description: "Markdown parse, outline, stats, and graph operations" },
+    { name: "Export", description: "Markdown, HTML, JSON, and honest degraded export adapters" },
+    { name: "AI", description: "Backend model scaffolding and deterministic fallbacks" },
+    { name: "MCP", description: "JSON-RPC 2.0 MCP endpoint and read-only discovery" },
+    { name: "Discovery", description: "Public platform discovery files" },
   ],
   paths: {
     "/api/health": {
       get: {
         tags: ["Health"],
         summary: "Health check",
-        description: "Returns service health status",
-        operationId: "getHealth",
+        description: publicSafe,
         responses: {
           "200": {
-            description: "Service is healthy",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/HealthResponse" },
-              },
-            },
+            description: "Service health summary",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/ApiResponse" } } },
           },
         },
       },
+    },
+    "/api/v1/health": {
+      get: {
+        tags: ["Health"],
+        summary: "Versioned health check",
+        description: publicSafe,
+        responses: { "200": { description: "Service health summary" } },
+      },
+    },
+    "/api/v1/parse": {
+      post: { tags: ["Markdown"], ...postOperation("Parse Markdown", "Parse Markdown into concrete graph, outline, and stats data.", "MarkdownRequest") },
     },
     "/api/v1/transform": {
+      post: { tags: ["Markdown"], ...postOperation("Transform Markdown to graph", "Parse Markdown and return graph nodes, edges, outline, and stats.", "MarkdownRequest") },
+    },
+    "/api/v1/outline": {
+      post: { tags: ["Markdown"], ...postOperation("Generate outline", "Generate a heading outline from Markdown.", "MarkdownRequest") },
+    },
+    "/api/v1/stats": {
+      post: { tags: ["Markdown"], ...postOperation("Get Markdown stats", "Count words, lines, headings, links, images, code blocks, nodes, and edges.", "MarkdownRequest") },
+    },
+    "/api/v1/export": {
+      post: { tags: ["Export"], ...postOperation("Export Markdown", "Export Markdown as markdown, html, json, or return honest degraded state for pdf/png.", "ExportRequest") },
+    },
+    "/api/v1/export/html": {
       post: {
-        tags: ["Transform"],
-        summary: "Transform markdown to graph",
-        description: "Parses markdown and returns a graph representation",
-        operationId: "transformMarkdown",
+        tags: ["Export"],
+        summary: "Export HTML",
+        description: "Convert Markdown to sanitized standalone HTML.",
         requestBody: {
           required: true,
           content: {
             "application/json": {
-              schema: { $ref: "#/components/schemas/TransformRequest" },
+              schema: { $ref: "#/components/schemas/MarkdownRequest" },
             },
           },
         },
         responses: {
           "200": {
-            description: "Successfully transformed",
+            description: "Sanitized standalone HTML document.",
             content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/TransformResponse" },
+              "text/html": {
+                schema: { type: "string" },
               },
             },
           },
         },
       },
     },
-    "/api/v1/export": {
-      post: {
-        tags: ["Export"],
-        summary: "Export document",
-        description: "Export markdown to various formats",
-        operationId: "exportDocument",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: { $ref: "#/components/schemas/ExportRequest" },
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "Successfully exported",
-          },
-        },
+    "/api/v1/export/json": {
+      post: { tags: ["Export"], ...postOperation("Export JSON", "Convert Markdown to structured graph, outline, stats, and source JSON.", "MarkdownRequest") },
+    },
+    "/api/v1/export/pdf": {
+      post: { tags: ["Export"], ...postOperation("PDF export degraded state", "Server-side PDF export is scaffolded and returns an honest unavailable state until configured.", "MarkdownRequest") },
+    },
+    "/api/v1/export/png": {
+      post: { tags: ["Export"], ...postOperation("PNG export degraded state", "Server-side PNG graph export is scaffolded and returns an honest unavailable state until configured.", "MarkdownRequest") },
+    },
+    "/api/v1/share": {
+      post: { tags: ["Export"], ...postOperation("Generate bounded share URL", "Generate a public-safe URL with bounded encoded Markdown content. No server persistence is claimed.", "MarkdownRequest") },
+    },
+    "/api/v1/ai/status": {
+      get: {
+        tags: ["AI"],
+        summary: "Model status",
+        description: "Returns whether backend model integration is configured or degraded.",
+        responses: { "200": { description: "Model status" } },
       },
     },
     "/api/v1/ai/enhance": {
+      post: { tags: ["AI"], ...postOperation("Enhance Markdown", "Returns model-backed output when configured, otherwise an honest degraded state.", "AIEnhanceRequest") },
+    },
+    "/api/v1/ai/toc": {
+      post: { tags: ["AI"], ...postOperation("Generate table of contents", "Generate a deterministic table of contents from real headings; model support may be layered later.", "MarkdownRequest") },
+    },
+    "/api/v1/ai/summarize": {
+      post: { tags: ["AI"], ...postOperation("Summarize Markdown", "Returns model-backed summary when configured, otherwise an honest degraded state.", "MarkdownRequest") },
+    },
+    "/api/mcp": {
+      get: {
+        tags: ["MCP"],
+        summary: "MCP endpoint metadata",
+        description: "Read-only MCP metadata and JSON-RPC usage.",
+        responses: { "200": { description: "MCP metadata" } },
+      },
       post: {
-        tags: ["AI"],
-        summary: "AI enhancement",
-        description: "Enhance markdown with AI suggestions",
-        operationId: "aiEnhance",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: { $ref: "#/components/schemas/AIEnhanceRequest" },
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "AI suggestions returned",
-          },
-        },
+        tags: ["MCP"],
+        summary: "MCP JSON-RPC 2.0",
+        description: "Accepts JSON-RPC 2.0 objects or batches for real Markdown tools and introspection.",
+        responses: { "200": { description: "JSON-RPC 2.0 response" } },
       },
     },
   },
   components: {
+    securitySchemes: {
+      platphormApiKey: {
+        type: "apiKey",
+        in: "header",
+        name: "X-PlatPhorm-API-Key",
+        description: "Future protected-action key. Public-safe Phase 1 endpoints do not require it by default.",
+      },
+      platphormBearer: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "PLATPHORM_API_KEY",
+        description: "Authorization: Bearer $PLATPHORM_API_KEY for future protected actions.",
+      },
+    },
     schemas: {
       ApiResponse: {
         type: "object",
         properties: {
-          success: { type: "boolean" },
+          ok: { type: "boolean" },
+          success: { type: "boolean", deprecated: true },
           data: { type: "object" },
           error: { $ref: "#/components/schemas/ApiError" },
           meta: { $ref: "#/components/schemas/ApiMeta" },
         },
-        required: ["success"],
+        required: ["ok"],
       },
       ApiError: {
         type: "object",
@@ -149,82 +211,18 @@ export const openApiSpec = {
           requestId: { type: "string" },
         },
       },
-      HealthResponse: {
+      MarkdownRequest: {
         type: "object",
         properties: {
-          status: { type: "string", enum: ["healthy", "degraded", "unhealthy"] },
-          service: { type: "string" },
-          version: { type: "string" },
-          uptime: { type: "number", nullable: true },
-          environment: { type: "string" },
-        },
-      },
-      TransformRequest: {
-        type: "object",
-        properties: {
-          markdown: { type: "string", description: "Raw markdown content" },
-          options: {
-            type: "object",
-            properties: {
-              includeMetadata: { type: "boolean", default: true },
-              flattenInline: { type: "boolean", default: false },
-            },
-          },
+          markdown: { type: "string", maxLength: 262144 },
+          options: { type: "object" },
         },
         required: ["markdown"],
-      },
-      TransformResponse: {
-        type: "object",
-        properties: {
-          nodes: { type: "array", items: { $ref: "#/components/schemas/GraphNode" } },
-          edges: { type: "array", items: { $ref: "#/components/schemas/GraphEdge" } },
-          outline: { type: "array", items: { $ref: "#/components/schemas/OutlineItem" } },
-          stats: { $ref: "#/components/schemas/DocumentStats" },
-        },
-      },
-      GraphNode: {
-        type: "object",
-        properties: {
-          id: { type: "string" },
-          type: { type: "string" },
-          text: { type: "string" },
-          depth: { type: "integer" },
-          parent: { type: "string", nullable: true },
-        },
-      },
-      GraphEdge: {
-        type: "object",
-        properties: {
-          id: { type: "string" },
-          from: { type: "string" },
-          to: { type: "string" },
-        },
-      },
-      OutlineItem: {
-        type: "object",
-        properties: {
-          id: { type: "string" },
-          level: { type: "integer" },
-          text: { type: "string" },
-          children: { type: "array", items: { $ref: "#/components/schemas/OutlineItem" } },
-        },
-      },
-      DocumentStats: {
-        type: "object",
-        properties: {
-          nodeCount: { type: "integer" },
-          wordCount: { type: "integer" },
-          charCount: { type: "integer" },
-          headingCount: { type: "integer" },
-          linkCount: { type: "integer" },
-          imageCount: { type: "integer" },
-          codeBlockCount: { type: "integer" },
-        },
       },
       ExportRequest: {
         type: "object",
         properties: {
-          markdown: { type: "string" },
+          markdown: { type: "string", maxLength: 262144 },
           format: { type: "string", enum: ["markdown", "json", "html", "pdf", "png"] },
         },
         required: ["markdown", "format"],
@@ -232,24 +230,46 @@ export const openApiSpec = {
       AIEnhanceRequest: {
         type: "object",
         properties: {
-          markdown: { type: "string" },
+          markdown: { type: "string", maxLength: 262144 },
           action: { type: "string", enum: ["improve", "summarize", "expand", "fix-grammar", "generate-toc"] },
-          context: { type: "string" },
+          context: { type: "string", maxLength: 4096 },
         },
         required: ["markdown", "action"],
       },
     },
-    securitySchemes: {
-      bearerAuth: {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
-      },
-      apiKey: {
-        type: "apiKey",
-        in: "header",
-        name: "X-API-Key",
-      },
-    },
   },
+}
+
+export function openApiYaml(): string {
+  return toYaml(openApiSpec)
+}
+
+function toYaml(value: unknown, indent = 0): string {
+  const space = " ".repeat(indent)
+  if (Array.isArray(value)) {
+    return value.map((item) => `${space}- ${formatYamlValue(item, indent + 2).trimStart()}`).join("\n")
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([key, val]) => {
+        if (val && typeof val === "object") {
+          return `${space}${JSON.stringify(key)}:\n${toYaml(val, indent + 2)}`
+        }
+        return `${space}${JSON.stringify(key)}: ${formatScalar(val)}`
+      })
+      .join("\n")
+  }
+  return `${space}${formatScalar(value)}`
+}
+
+function formatYamlValue(value: unknown, indent: number): string {
+  if (value && typeof value === "object") return `\n${toYaml(value, indent)}`
+  return formatScalar(value)
+}
+
+function formatScalar(value: unknown): string {
+  if (value === null) return "null"
+  if (typeof value === "string") return JSON.stringify(value)
+  if (typeof value === "number" || typeof value === "boolean") return String(value)
+  return JSON.stringify(value)
 }

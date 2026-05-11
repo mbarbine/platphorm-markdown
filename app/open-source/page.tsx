@@ -20,7 +20,7 @@ const dependencies = [
   { name: "React Flow", url: "https://reactflow.dev", description: "Graph visualization" },
   { name: "Monaco Editor", url: "https://microsoft.github.io/monaco-editor/", description: "Code editor" },
   { name: "Zustand", url: "https://zustand-demo.pmnd.rs/", description: "State management" },
-  { name: "Vercel AI SDK", url: "https://sdk.vercel.ai", description: "AI integration" },
+  { name: "Vercel AI SDK", url: "https://sdk.vercel.ai", description: "Future backend model integration scaffold" },
   { name: "Lucide", url: "https://lucide.dev", description: "Icons" },
 ]
 

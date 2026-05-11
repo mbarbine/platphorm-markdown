@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/editor/private/"],
+        disallow: ["/api/v1/share/", "/api/cron/", "/editor/private/"],
       },
       {
         userAgent: "GPTBot",
@@ -22,7 +22,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: ["/", "/llms.txt", "/llms-full.txt"],
       },
     ],
-    sitemap: `${siteConfig.url}/sitemap.xml`,
+    sitemap: [`${siteConfig.url}/sitemap.xml`, `${siteConfig.url}/sitemap-main.xml`, `${siteConfig.url}/sitemap-index.xml`],
     host: siteConfig.url,
   }
 }

@@ -3,6 +3,7 @@ import { siteConfig } from "@/lib/platphorm/config"
 
 // Standard API response types
 export interface ApiResponse<T = unknown> {
+  ok: boolean
   success: boolean
   data?: T
   error?: ApiError
@@ -36,6 +37,7 @@ export function generateRequestId(): string {
 export function apiSuccess<T>(data: T, meta?: Partial<ApiMeta>): NextResponse<ApiResponse<T>> {
   const requestId = generateRequestId()
   return NextResponse.json({
+    ok: true,
     success: true,
     data,
     meta: {
@@ -56,6 +58,7 @@ export function apiError(
 ): NextResponse<ApiResponse<never>> {
   return NextResponse.json(
     {
+      ok: false,
       success: false,
       error: { code, message, details },
       meta: {
@@ -123,7 +126,7 @@ export function corsHeaders(origin?: string) {
   return {
     "Access-Control-Allow-Origin": origin || "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-ID",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-ID, X-PlatPhorm-API-Key, traceparent, tracestate, X-PlatPhorm-Request-Id",
     "Access-Control-Max-Age": "86400",
   }
 }

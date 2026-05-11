@@ -1,10 +1,10 @@
 export const siteConfig = {
   name: "MarkdownTree",
-  description: "Visual Markdown Editor & Graph Viewer - Transform markdown documents into interactive graph visualizations with AI-powered enhancements.",
+  description: "Browser-first Markdown editor, live preview, structure analyzer, graph viewer, and public Markdown API for the PlatPhormNews web mesh.",
   url: "https://markdown.platphormnews.com",
   ogImage: "https://markdown.platphormnews.com/og-image.jpg",
   links: {
-    github: "https://github.com/mbarbine/markdown-webby",
+    github: "https://github.com/mbarbine/platphorm-markdown",
     twitter: "https://twitter.com/platphormnews",
   },
   creator: "Platphorm News",
@@ -14,12 +14,16 @@ export const siteConfig = {
     basePath: "/api/v1",
   },
   features: {
-    ai: true,
+    ai: "degraded",
     mcp: true,
-    collaboration: true,
-    export: ["markdown", "json", "html", "pdf", "png"],
+    collaboration: false,
+    export: ["markdown", "json", "html"],
+    degradedExport: ["pdf", "png"],
+    share: "bounded-url",
+    storage: "browser-local",
   },
-  coinbase: "0x30589F2e1B8E9a48BBb2c66Ac012FE7ED2A7eB85",
+  trustPolicyLine:
+    "Public-safe Markdown editing, graph visualization, formatting, preview, local non-sensitive Markdown draft persistence, read-only MCP introspection, RSS/feed consumption, trusted-domain discovery, standard route compliance, Vercel metadata capture, backend model scaffolding, and trace-linked Markdown operations are intentionally supported for public use. PLATPHORM_API_KEY support is scaffolded for future protected backend services, server-side exports, AI enhancement calls, webhook mutation, sync, test-triggering, reporting, administrative actions, and sensitive operations.",
 }
 
 export const markdownNodeTypes = {

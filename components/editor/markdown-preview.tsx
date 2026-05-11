@@ -3,7 +3,6 @@
 import { useMemo } from "react"
 import { useMarkdown } from "@/lib/store/use-markdown"
 import { cn } from "@/lib/utils"
-import DOMPurify from "isomorphic-dompurify"
 
 interface MarkdownPreviewProps {
   className?: string
@@ -48,11 +47,17 @@ function renderMarkdown(content: string): string {
   // Ordered lists
   html = html.replace(/^\d+\. (.+)$/gm, '<li class="ml-6 list-decimal">$1</li>')
 
+  const safeUrl = (value: string) => (/^(https?:|mailto:|#|\/)/i.test(value.trim()) ? value.trim().replace(/"/g, "%22") : "#")
+
   // Images
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4" />')
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match, alt, url) => {
+    return `<img src="${safeUrl(url)}" alt="${alt}" class="max-w-full rounded-lg my-4" />`
+  })
 
   // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, url) => {
+    return `<a href="${safeUrl(url)}" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">${text}</a>`
+  })
 
   // Bold
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold">$1</strong>')
@@ -106,8 +111,7 @@ export function MarkdownPreview({ className }: MarkdownPreviewProps) {
   const content = useMarkdown(state => state.content)
 
   const renderedHtml = useMemo(() => {
-    const rawHtml = renderMarkdown(content)
-    return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } })
+    return renderMarkdown(content)
   }, [content])
 
   return (

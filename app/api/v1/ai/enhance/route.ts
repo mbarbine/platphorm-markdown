@@ -1,44 +1,45 @@
-import { streamText, Output } from "ai"
+import { apiError, apiSuccess, corsHeaders, errors } from "@/lib/api/utils"
+import { deterministicTableOfContents, getModelStatus, unavailableModelResult } from "@/lib/model/markdown-model"
+import { validateMarkdownInput } from "@/lib/markdown/render"
+import { createTraceContext, traceHeaders, traceLink } from "@/lib/platform/trace"
 import { z } from "zod"
-import { errors, corsHeaders } from "@/lib/api/utils"
 
 const ActionSchema = z.enum(["improve", "summarize", "expand", "fix-grammar", "generate-toc"])
 
-const systemPrompts: Record<z.infer<typeof ActionSchema>, string> = {
-  improve: `You are a professional editor. Improve the given markdown text for clarity, flow, and readability while preserving the original meaning and structure. Return only the improved markdown.`,
-  summarize: `You are a summarization expert. Create a concise summary of the given markdown content. Return as a markdown bullet list of key points.`,
-  expand: `You are a content writer. Expand the given markdown with more detail, examples, and explanations while maintaining the same tone and structure. Return as markdown.`,
-  "fix-grammar": `You are a grammar expert. Fix any grammar, spelling, or punctuation errors in the given markdown. Return the corrected markdown without any explanations.`,
-  "generate-toc": `You are a document assistant. Generate a table of contents for the given markdown document based on its headings. Return as a markdown list with links.`,
-}
-
 export async function POST(request: Request) {
   try {
+    const trace = createTraceContext(request.headers, "ai-enhance")
     const body = await request.json()
-    const { markdown, action, context } = body
+    const validMarkdown = validateMarkdownInput(body.markdown)
+    if (typeof validMarkdown !== "string") return errors.badRequest(validMarkdown.message, validMarkdown)
 
-    if (!markdown || typeof markdown !== "string") {
-      return errors.badRequest("markdown field is required")
+    const action = ActionSchema.safeParse(body.action)
+    if (!action.success) return errors.badRequest(`Invalid action. Supported: ${ActionSchema.options.join(", ")}`)
+
+    if (action.data === "generate-toc") {
+      const response = apiSuccess({
+        status: "completed",
+        mode: "deterministic",
+        output: deterministicTableOfContents(validMarkdown),
+        trace: { traceId: trace.traceId, spanId: trace.spanId, traceUrl: traceLink(trace.traceId) },
+      })
+      Object.entries(traceHeaders(trace)).forEach(([key, value]) => response.headers.set(key, value))
+      return response
     }
 
-    const validAction = ActionSchema.safeParse(action)
-    if (!validAction.success) {
-      return errors.badRequest(`Invalid action. Supported: ${ActionSchema.options.join(", ")}`)
+    const model = getModelStatus()
+    if (!model.configured) {
+      return apiError("MODEL_UNAVAILABLE", "AI enhancement is not configured for this deployment.", 503, {
+        ...unavailableModelResult(action.data),
+        trace: { traceId: trace.traceId, spanId: trace.spanId, traceUrl: traceLink(trace.traceId) },
+      })
     }
 
-    const systemPrompt = systemPrompts[validAction.data]
-    const userPrompt = context 
-      ? `Context: ${context}\n\nMarkdown:\n${markdown}`
-      : markdown
-
-    const result = streamText({
-      model: "openai/gpt-4o-mini",
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-      maxOutputTokens: 4000,
+    return apiError("MODEL_ADAPTER_NOT_CONNECTED", "Model provider is detected, but generation execution is not enabled in this Phase 1 adapter.", 501, {
+      action: action.data,
+      model,
+      trace: { traceId: trace.traceId, spanId: trace.spanId, traceUrl: traceLink(trace.traceId) },
     })
-
-    return result.toUIMessageStreamResponse()
   } catch (error) {
     console.error("AI enhance error:", error)
     return errors.serverError("AI enhancement failed")

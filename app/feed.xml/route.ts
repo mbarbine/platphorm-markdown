@@ -1,59 +1,61 @@
 import { siteConfig } from "@/lib/platphorm/config"
 
-export async function GET() {
+function escapeXml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+}
+
+function buildRssFeed() {
   const buildDate = new Date().toUTCString()
-  
-  const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  const items = [
+    {
+      title: "MarkdownTree Phase 1 public Markdown tools",
+      link: `${siteConfig.url}/editor`,
+      guid: `${siteConfig.url}/editor#phase-1`,
+      description: "Browser-first Markdown editor, real graph transform, outline, preview, stats, and Markdown/HTML/JSON exports.",
+    },
+    {
+      title: "MarkdownTree API and MCP endpoints",
+      link: `${siteConfig.url}/api/docs`,
+      guid: `${siteConfig.url}/api/docs#openapi`,
+      description: "OpenAPI and JSON-RPC MCP surfaces for public-safe Markdown parsing, graphing, outline, stats, and exports.",
+    },
+    {
+      title: "MarkdownTree discovery files",
+      link: `${siteConfig.url}/llms.txt`,
+      guid: `${siteConfig.url}/llms.txt#discovery`,
+      description: "Readable llms.txt, full context, route index, sitemap, trust policy, and well-known discovery files.",
+    },
+  ]
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${siteConfig.name}</title>
+    <title>${escapeXml(siteConfig.name)}</title>
     <link>${siteConfig.url}</link>
-    <description>${siteConfig.description}</description>
+    <description>${escapeXml(siteConfig.description)}</description>
     <language>en-us</language>
     <lastBuildDate>${buildDate}</lastBuildDate>
-    <atom:link href="${siteConfig.url}/feed.xml" rel="self" type="application/rss+xml"/>
-    <generator>${siteConfig.name} ${siteConfig.version}</generator>
-    <webMaster>support@platphormnews.com (${siteConfig.creator})</webMaster>
-    
-    <item>
-      <title>Welcome to ${siteConfig.name}</title>
-      <link>${siteConfig.url}</link>
-      <guid isPermaLink="true">${siteConfig.url}#welcome</guid>
+    <atom:link href="${siteConfig.url}/rss.xml" rel="self" type="application/rss+xml"/>
+    <generator>${escapeXml(`${siteConfig.name} ${siteConfig.version}`)}</generator>
+${items
+  .map(
+    (item) => `    <item>
+      <title>${escapeXml(item.title)}</title>
+      <link>${item.link}</link>
+      <guid isPermaLink="true">${item.guid}</guid>
       <pubDate>${buildDate}</pubDate>
-      <description>Transform your markdown documents into interactive graph visualizations with AI-powered enhancements.</description>
-      <content:encoded><![CDATA[
-        <h2>Welcome to ${siteConfig.name}</h2>
-        <p>${siteConfig.description}</p>
-        <ul>
-          <li>Visual markdown editing with real-time preview</li>
-          <li>Interactive graph visualization of document structure</li>
-          <li>AI-powered writing assistance</li>
-          <li>Multiple export formats (Markdown, JSON, HTML)</li>
-        </ul>
-      ]]></content:encoded>
-    </item>
-    
-    <item>
-    <item>
-      <title>Now on Platphorm News Network &amp; MCP</title>
-      <link>https://platphormnews.com/api/network/graph</link>
-      <guid isPermaLink="true">https://platphormnews.com/api/network/graph</guid>
-      <pubDate>${buildDate}</pubDate>
-      <description>MarkdownTree is registered on the Platphorm News Network. View the network graph and integrate via MCP at https://mcp.platphormnews.com</description>
-    </item>
-
-      <title>API Documentation</title>
-      <link>${siteConfig.url}/api/docs</link>
-      <guid isPermaLink="true">${siteConfig.url}/api/docs</guid>
-      <pubDate>${buildDate}</pubDate>
-      <description>Explore the ${siteConfig.name} API for programmatic access to markdown transformation and export features.</description>
-    </item>
+      <description>${escapeXml(item.description)}</description>
+    </item>`,
+  )
+  .join("\n")}
   </channel>
 </rss>`
+}
 
-  return new Response(rss, {
+export async function GET() {
+  return new Response(buildRssFeed(), {
     headers: {
-      "Content-Type": "application/xml",
+      "Content-Type": "application/rss+xml; charset=utf-8",
       "Cache-Control": "public, max-age=3600, s-maxage=3600",
     },
   })

@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/site-footer"
 import { Code2, ArrowLeft, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { JsonLd, generateFAQSchema } from "@/components/json-ld"
+import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/components/json-ld"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 
 export const metadata: Metadata = {
@@ -27,21 +27,26 @@ const faqs = [
   {
     question: "Does MarkdownTree store my documents?",
     answer:
-      "No. Documents are processed entirely in your browser. Nothing is sent to or stored on our servers.",
+      "The editor is browser-first. Non-sensitive local drafts are stored in your browser with local draft storage, and public API calls process submitted Markdown without claiming server-side document storage.",
   },
   {
     question: "What export formats does MarkdownTree support?",
     answer:
-      "MarkdownTree supports export to Markdown, HTML, and JSON. PNG graph export is coming soon.",
+      "MarkdownTree supports export to Markdown, HTML, and JSON. PDF export and PNG graph export are scaffolded but unavailable in Phase 1, so they show disabled or degraded states.",
   },
 ]
 
 export default function FAQPage() {
   const faqSchema = generateFAQSchema(faqs)
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: siteConfig.url },
+    { name: "FAQ", url: `${siteConfig.url}/faq` },
+  ])
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <JsonLd type="FAQPage" data={{ mainEntity: faqSchema }} />
+      <JsonLd type="BreadcrumbList" data={{ items: breadcrumbs }} />
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur">
         <div className="container flex h-14 items-center">
           <Link href="/" className="flex items-center gap-2 font-semibold">

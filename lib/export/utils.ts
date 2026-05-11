@@ -22,11 +22,12 @@ export function exportJson(data: object, filename = "document.json") {
 }
 
 export async function exportHtml(markdown: string, filename = "document.html") {
-  const response = await fetch("/api/v1/export", {
+  const response = await fetch("/api/v1/export/html", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ markdown, format: "html" }),
+    body: JSON.stringify({ markdown }),
   })
+  if (!response.ok) throw new Error("HTML export failed")
   const html = await response.text()
   downloadFile(html, filename, "text/html")
 }
@@ -44,7 +45,10 @@ export function formatFileSize(bytes: number): string {
 
 // Generate shareable URL with encoded content
 export function generateShareUrl(markdown: string): string {
-  const encoded = encodeURIComponent(btoa(markdown))
+  const encoded = btoa(unescape(encodeURIComponent(markdown)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "")
   return `${window.location.origin}/editor?content=${encoded}`
 }
 
@@ -55,7 +59,8 @@ export function parseShareUrl(): string | null {
   const content = params.get("content")
   if (content) {
     try {
-      return atob(decodeURIComponent(content))
+      const base64 = content.replace(/-/g, "+").replace(/_/g, "/")
+      return decodeURIComponent(escape(atob(base64)))
     } catch {
       return null
     }

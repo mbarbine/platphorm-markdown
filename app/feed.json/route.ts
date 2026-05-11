@@ -30,7 +30,7 @@ export async function GET() {
         id: `${siteConfig.url}/api/v1`,
         url: `${siteConfig.url}/api/docs`,
         title: "MarkdownTree API v1",
-        content_text: "Transform markdown to graphs, export documents, and leverage AI enhancements via our REST API.",
+        content_text: "Transform markdown to graphs, export Markdown/HTML/JSON documents, inspect model degraded state, and use MCP via the public REST API.",
         date_published: new Date().toISOString(),
         tags: ["api", "documentation"],
       },

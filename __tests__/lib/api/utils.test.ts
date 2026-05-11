@@ -9,11 +9,28 @@ jest.mock("next/server", () => ({
 }))
 
 import {
+  apiSuccess,
+  apiError,
   generateRequestId,
   checkRateLimit,
   parsePagination,
   corsHeaders,
 } from "@/lib/api/utils"
+
+describe("standard API response shape", () => {
+  it("includes ok true for success responses", () => {
+    const response = apiSuccess({ value: 1 }) as any
+    expect(response.body.ok).toBe(true)
+    expect(response.body.success).toBe(true)
+  })
+
+  it("includes ok false for error responses", () => {
+    const response = apiError("TEST", "test error", 400) as any
+    expect(response.body.ok).toBe(false)
+    expect(response.body.success).toBe(false)
+    expect(response.status).toBe(400)
+  })
+})
 
 describe("generateRequestId", () => {
   it("returns a string starting with req_", () => {

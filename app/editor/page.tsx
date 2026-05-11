@@ -1,5 +1,4 @@
 "use client"
-import { useShallow } from "zustand/react/shallow"
 
 import { useEffect, useCallback, useRef, useState } from "react"
 import dynamic from "next/dynamic"
@@ -16,7 +15,8 @@ import {
   ResizablePanelGroup 
 } from "@/components/ui/resizable"
 import { cn } from "@/lib/utils"
-import { parseShareUrl } from "@/lib/export/utils"
+import { downloadFile, generateShareUrl, parseShareUrl } from "@/lib/export/utils"
+import { loadDefaultDraft, saveDefaultDraft } from "@/lib/store/local-drafts"
 
 const MarkdownEditor = dynamic(
   () => import("@/components/editor/markdown-editor").then(mod => mod.MarkdownEditor),
@@ -31,6 +31,8 @@ const GraphViewer = dynamic(
 export default function EditorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showAI, setShowAI] = useState(false)
+  const [localDraftStatus, setLocalDraftStatus] = useState<"loading" | "saved" | "saving" | "unavailable">("loading")
+  const [shareStatus, setShareStatus] = useState<string>("")
 
   // ⚡ Bolt: Extracting specific properties with useShallow prevents EditorPage
   // from re-rendering when unrelated store state (like hover or selection) changes.
@@ -59,8 +61,39 @@ export default function EditorPage() {
     const sharedContent = parseShareUrl()
     if (sharedContent) {
       setContent(sharedContent)
+      setLocalDraftStatus("saved")
+      return
     }
+
+    loadDefaultDraft()
+      .then((draft) => {
+        if (draft?.content) setContent(draft.content)
+        setLocalDraftStatus("saved")
+      })
+      .catch(() => setLocalDraftStatus("unavailable"))
   }, [setContent])
+
+  useEffect(() => {
+    if (!content) return
+    setLocalDraftStatus((current) => (current === "unavailable" ? "unavailable" : "saving"))
+    const timer = window.setTimeout(() => {
+      saveDefaultDraft(content)
+        .then(() => setLocalDraftStatus("saved"))
+        .catch(() => setLocalDraftStatus("unavailable"))
+    }, 700)
+    return () => window.clearTimeout(timer)
+  }, [content])
+
+  const handleShare = useCallback(async () => {
+    try {
+      const url = generateShareUrl(content)
+      await navigator.clipboard.writeText(url)
+      setShareStatus("Share URL copied. Content is encoded in the URL and not stored server-side.")
+      window.setTimeout(() => setShareStatus(""), 3500)
+    } catch {
+      setShareStatus("Share URL could not be copied by this browser.")
+    }
+  }, [content])
 
   const handleInsertFromAI = useCallback((text: string) => {
     setContent(content + "\n\n" + text)
@@ -88,7 +121,7 @@ export default function EditorPage() {
     e.target.value = ""
   }, [setContent])
 
-  const handleExport = useCallback((format: string) => {
+  const handleExport = useCallback(async (format: string) => {
     let exportContent: string
     let filename: string
     let mimeType: string
@@ -99,28 +132,20 @@ export default function EditorPage() {
         filename = "document.md"
         mimeType = "text/markdown"
         break
-      case "html":
-        exportContent = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Exported Markdown</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; }
-    pre { background: #f4f4f5; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
-    code { font-family: monospace; }
-    blockquote { border-left: 4px solid #22c55e; padding-left: 1rem; margin-left: 0; }
-  </style>
-</head>
-<body>
-${content}
-</body>
-</html>`
+      case "html": {
+        const response = await fetch("/api/v1/export/html", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ markdown: content }),
+        })
+        if (!response.ok) return
+        exportContent = await response.text()
         filename = "document.html"
         mimeType = "text/html"
         break
+      }
       case "json":
-        exportContent = JSON.stringify({ content, graph }, null, 2)
+        exportContent = JSON.stringify({ markdown: content, graph, storageMode: "indexeddb", syncStatus: "local_only" }, null, 2)
         filename = "document.json"
         mimeType = "application/json"
         break
@@ -128,15 +153,7 @@ ${content}
         return
     }
 
-    const blob = new Blob([exportContent], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    downloadFile(exportContent, filename, mimeType)
   }, [content, graph])
 
   return (
@@ -146,8 +163,11 @@ ${content}
       <EditorToolbar 
         onImport={handleImport} 
         onExport={handleExport} 
+        onShare={handleShare}
         onToggleAI={toggleAI}
         showAI={showAI}
+        localDraftStatus={localDraftStatus}
+        shareStatus={shareStatus}
       />
       
       <input

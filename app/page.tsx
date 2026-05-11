@@ -24,10 +24,10 @@ import { ApiCodeBlock } from "@/components/landing/api-code-block"
 export const metadata: Metadata = {
   title: "MarkdownTree — Visual Markdown Editor & Graph Viewer",
   description:
-    "Transform any markdown document into an interactive graph visualization. Edit, explore, navigate and export with AI-powered enhancements. Free and open source.",
+    "Write, preview, parse, graph, analyze, and export Markdown in a browser-first editor with optional public API and MCP tooling. Free and open source.",
   alternates: { canonical: "/" },
-  openGraph: { title: "MarkdownTree — Visual Markdown Editor & Graph Viewer", description: "Transform any markdown document into an interactive graph visualization. Edit, explore, navigate and export with AI-powered enhancements. Free and open source.", url: "https://markdown.platphormnews.com", type: "website", siteName: "MarkdownTree" },
-  twitter: { card: "summary_large_image", title: "MarkdownTree — Visual Markdown Editor & Graph Viewer", description: "Transform any markdown document into an interactive graph visualization. Edit, explore, navigate and export with AI-powered enhancements. Free and open source." }
+  openGraph: { title: "MarkdownTree — Visual Markdown Editor & Graph Viewer", description: "Write, preview, parse, graph, analyze, and export Markdown in a browser-first editor with optional public API and MCP tooling. Free and open source.", url: "https://markdown.platphormnews.com", type: "website", siteName: "MarkdownTree" },
+  twitter: { card: "summary_large_image", title: "MarkdownTree — Visual Markdown Editor & Graph Viewer", description: "Write, preview, parse, graph, analyze, and export Markdown in a browser-first editor with optional public API and MCP tooling. Free and open source." }
 }
 
 const faqs = [
@@ -44,17 +44,17 @@ const faqs = [
   {
     question: "Does MarkdownTree store my documents?",
     answer:
-      "No. Documents are processed entirely in your browser. Nothing is sent to or stored on our servers.",
+      "The editor is browser-first. Non-sensitive local drafts are stored in your browser only, and public API requests process submitted Markdown without claiming server-side document storage.",
   },
   {
     question: "What export formats does MarkdownTree support?",
     answer:
-      "MarkdownTree supports export to Markdown, HTML, and JSON. PNG graph export is coming soon.",
+      "MarkdownTree supports export to Markdown, HTML, and JSON. PDF export and PNG graph export are scaffolded but unavailable in Phase 1, so the UI and API show degraded states instead of fake files.",
   },
   {
     question: "Does MarkdownTree have an API?",
     answer:
-      "Yes. MarkdownTree exposes a versioned REST API at /api/v1 with OpenAPI documentation at /api/docs. It is MCP-compatible for AI agent workflows.",
+      "Yes. MarkdownTree exposes public-safe REST endpoints at /api/v1 and JSON-RPC MCP tooling at /api/mcp. Future protected backend actions are scaffolded for PLATPHORM_API_KEY.",
   },
 ]
 
@@ -84,7 +84,7 @@ const features = [
     bg: "bg-amber-500/10",
     title: "AI Enhancements",
     description:
-      "Open the AI panel to improve writing, generate a table of contents, summarize sections, or ask questions about your document in natural language.",
+      "Open the assistant panel to see model availability. Table-of-contents generation works deterministically; model-backed writing assistance shows an honest degraded state until configured.",
   },
   {
     icon: Eye,
@@ -102,7 +102,7 @@ const features = [
     bg: "bg-teal-500/10",
     title: "Export & Share",
     description:
-      "Export to Markdown, clean HTML, or structured JSON. Share a URL that encodes your document so collaborators open it instantly, no signup needed.",
+      "Export to Markdown, clean HTML, or structured JSON. Copy a bounded URL-only share link when the document is safe to put in a URL.",
   },
   {
     icon: Zap,
@@ -111,15 +111,15 @@ const features = [
     bg: "bg-pink-500/10",
     title: "MCP-Ready API",
     description:
-      "Every feature is available via a versioned REST API with OpenAPI docs. MCP-compatible for AI agent workflows at mcp.platphormnews.com.",
+      "Public-safe parsing, graphing, outline, stats, export, and MCP introspection are available via a versioned REST API with OpenAPI docs.",
   },
 ]
 
 const stats = [
-  { value: "100%", label: "🌐 Browser-native, no backend required" },
+  { value: "Local", label: "Browser-first editor, preview, graph, and non-sensitive drafts" },
   { value: "4 views", label: "✏️ Editor · 🔀 Split · 📊 Graph · 👁️ Preview" },
   { value: "MIT", label: "📜 Open source licence" },
-  { value: "v1 API", label: "🔌 OpenAPI documented, MCP-compatible" },
+  { value: "v1 API", label: "OpenAPI documented with MCP JSON-RPC tooling" },
 ]
 
 export default function HomePage() {
@@ -128,6 +128,9 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <JsonLd type="WebApplication" />
+      <JsonLd type="SoftwareApplication" />
+      <JsonLd type="WebSite" />
+      <JsonLd type="WebPage" data={{ name: "MarkdownTree", url: siteConfig.url }} />
       <JsonLd type="Organization" />
       <JsonLd type="FAQPage" data={{ questions: faqSchema }} />
 
@@ -185,7 +188,7 @@ export default function HomePage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-xs text-muted-foreground mb-8 animate-fade-up backdrop-blur-sm">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              🤖 AI-powered · 📜 Open source · 🔌 MCP-ready
+              Browser-first · Open source · MCP-ready
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-balance leading-[1.04] animate-fade-up-1">
@@ -196,7 +199,7 @@ export default function HomePage() {
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl text-pretty leading-relaxed animate-fade-up-2">
               MarkdownTree transforms any markdown document into an interactive node graph —
               structure, hierarchy, and relationships become immediately visible.
-              Edit, explore, enhance with AI, and export in seconds.
+              Edit, explore, generate outlines, preview safely, and export in seconds.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3 animate-fade-up-3">
@@ -236,6 +239,9 @@ export default function HomePage() {
               <span className="ml-3 text-xs font-mono text-muted-foreground">
                 markdown.platphormnews.com/editor
               </span>
+              <span className="rounded border border-border px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                Static product preview
+              </span>
               <div className="ml-auto flex items-center gap-2">
                 <div className="flex rounded-md border border-border bg-background text-xs overflow-hidden">
                   <span className="px-2 py-1 bg-secondary text-secondary-foreground font-medium">Split</span>
@@ -245,7 +251,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Split view mock */}
+            {/* Split view preview */}
             <div className="grid grid-cols-5 divide-x divide-border" style={{ minHeight: 360 }}>
               {/* Editor pane */}
               <div className="col-span-2 p-5 font-mono text-xs leading-6 text-foreground/80 bg-card overflow-hidden">
@@ -435,8 +441,8 @@ export default function HomePage() {
               <p className="text-muted-foreground leading-relaxed mb-6">
                 Every feature is accessible via{" "}
                 <code className="text-primary font-mono text-sm">/api/v1</code>. Transform
-                markdown to graph JSON, stream AI enhancements, and receive structured
-                webhooks. OpenAPI spec live at{" "}
+                markdown to graph JSON, generate outlines and stats, export HTML or JSON,
+                and inspect model availability. OpenAPI spec live at{" "}
                 <code className="text-primary font-mono text-sm">/api/docs</code>.
               </p>
               <div className="flex flex-wrap gap-3">

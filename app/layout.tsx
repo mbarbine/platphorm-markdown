@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s | MarkdownTree",
   },
   description:
-    "Transform any markdown document into an interactive graph visualization. Edit, explore, navigate and export with AI-powered enhancements.",
+    "Write, preview, parse, graph, analyze, and export Markdown with browser-first local drafts plus optional public API and MCP tooling.",
   keywords: [
     "markdown",
     "visualization",
@@ -37,6 +37,8 @@ export const metadata: Metadata = {
     "open source",
     "i18n",
     "share cards",
+    "local drafts",
+    "Markdown API",
     "Monaco editor",
     "ReactFlow",
   ],
@@ -65,7 +67,7 @@ export const metadata: Metadata = {
     url: "https://markdown.platphormnews.com",
     title: "MarkdownTree — Visual Markdown Editor & Graph Viewer",
     description:
-      "Transform markdown documents into interactive graph visualizations with AI-powered enhancements.",
+      "Write, preview, parse, graph, analyze, and export Markdown with browser-first local drafts plus optional public API and MCP tooling.",
     siteName: "MarkdownTree",
     images: [
       {
@@ -79,7 +81,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "MarkdownTree — Visual Markdown Editor",
-    description: "Transform markdown into interactive graph visualizations",
+    description: "Browser-first Markdown editor, parser, live preview, and graph viewer",
     images: ["/og-image.jpg"],
     creator: "@platphormnews",
   },

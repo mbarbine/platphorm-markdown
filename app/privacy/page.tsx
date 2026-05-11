@@ -60,13 +60,14 @@ export default function PrivacyPage() {
           <h3>Content You Provide</h3>
           <p>
             When you use the editor, your markdown content is processed locally in your browser.
-            We do not store your documents on our servers unless you explicitly choose to share them.
+            Public API calls process submitted Markdown for the requested operation but do not claim
+            server-side document storage in Phase 1. Share links are URL-only and bounded.
           </p>
 
           <h3>AI Features</h3>
           <p>
-            When you use AI enhancement features, your content is sent to AI providers (via Vercel AI Gateway)
-            to process your request. This data is not stored after processing.
+            Backend model features are scaffolded but unavailable unless a provider is configured.
+            When unavailable, MarkdownTree returns a degraded state instead of sending content to a model.
           </p>
 
           <h3>Analytics</h3>
@@ -77,14 +78,14 @@ export default function PrivacyPage() {
 
           <h2>Local Storage</h2>
           <p>
-            We use browser local storage to save your preferences and recent documents.
-            This data stays on your device and is not transmitted to our servers.
+            We use browser storage for UI preferences and IndexedDB for non-sensitive local drafts.
+            This data stays on your device and is not transmitted to our servers by the editor.
           </p>
 
           <h2>Third-Party Services</h2>
           <ul>
             <li><strong>Vercel</strong> - Hosting and analytics</li>
-            <li><strong>Vercel AI Gateway</strong> - AI processing</li>
+            <li><strong>Optional backend model provider</strong> - used only when configured for protected model features</li>
           </ul>
 
           <h2>Data Security</h2>

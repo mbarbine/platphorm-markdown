@@ -38,16 +38,21 @@ import {
   ArrowDown,
   Settings2,
   Sparkles,
+  Share2,
+  FileWarning,
 } from "lucide-react"
 
 interface EditorToolbarProps {
   onImport?: () => void
   onExport?: (format: string) => void
+  onShare?: () => void
   onToggleAI?: () => void
   showAI?: boolean
+  localDraftStatus?: "loading" | "saved" | "saving" | "unavailable"
+  shareStatus?: string
 }
 
-export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: EditorToolbarProps) {
+export function EditorToolbar({ onImport, onExport, onShare, onToggleAI, showAI, localDraftStatus = "saved", shareStatus }: EditorToolbarProps) {
   // ⚡ Bolt: Selecting only required properties using useShallow prevents
   // the toolbar from uselessly re-rendering on every keystroke in the editor.
   const {
@@ -97,9 +102,9 @@ export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: Editor
   )
 
   return (
-    <div className="flex items-center gap-1 p-2 border-b border-border bg-card">
+    <div className="flex items-center gap-1 overflow-x-auto border-b border-border bg-card p-2">
       {/* View Mode Selector */}
-      <div className="flex items-center rounded-md border border-border bg-muted/50 p-0.5">
+      <div className="flex shrink-0 items-center rounded-md border border-border bg-muted/50 p-0.5">
         <Button
           variant={viewMode === "editor" ? "secondary" : "ghost"}
           size="sm"
@@ -151,7 +156,7 @@ export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: Editor
       {/* Graph Controls */}
       {(viewMode === "graph" || viewMode === "split") && (
         <>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <Button
               variant="ghost"
               size="icon"
@@ -190,7 +195,7 @@ export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: Editor
           <Separator orientation="vertical" className="h-6 mx-1" />
 
           {/* Expand/Collapse */}
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <Button
               variant="ghost"
               size="icon"
@@ -248,7 +253,7 @@ export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: Editor
       )}
 
       {/* Search */}
-      <div className="flex items-center gap-1">
+      <div className="hidden md:flex items-center gap-1">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
@@ -301,11 +306,23 @@ export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: Editor
       </div>
 
       {/* Spacer */}
-      <div className="flex-1" />
+      <div className="hidden md:block flex-1" />
 
       {/* Status */}
+      <Badge
+        variant="outline"
+        className="hidden lg:inline-flex text-xs"
+        title={
+          localDraftStatus === "unavailable"
+            ? "Browser IndexedDB local draft storage is unavailable. Markdown is not stored server-side."
+            : "Local draft status. Non-sensitive Markdown drafts are stored only in this browser with IndexedDB."
+        }
+      >
+        {localDraftStatus === "saving" ? "Saving local draft" : localDraftStatus === "unavailable" ? "Storage degraded" : "Local draft"}
+      </Badge>
+
       {hasChanges && (
-        <Badge variant="outline" className="text-xs">
+        <Badge variant="outline" className="text-xs" title="The editor has unsaved in-memory changes; local draft persistence will sync automatically.">
           Unsaved
         </Badge>
       )}
@@ -316,8 +333,8 @@ export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: Editor
         size="sm" 
         className="h-7 px-2 text-primary"
         onClick={onToggleAI}
-        title="Toggle AI Chat"
-        aria-label="Toggle AI Chat"
+        title="AI assistant panel. Model-backed help is future protected and shows a degraded state when no provider is configured."
+        aria-label="Toggle AI assistant panel"
       >
         <Sparkles className="h-3.5 w-3.5 mr-1" />
         <span className="hidden sm:inline">AI</span>
@@ -336,11 +353,22 @@ export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: Editor
           <DropdownMenuItem onClick={onImport}>
             Import Markdown
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            Import from URL
+          <DropdownMenuItem disabled title="URL import is not implemented in Phase 1 because arbitrary fetches require SSRF protection.">
+            Import from URL unavailable
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
+        title={shareStatus || "Copy a bounded URL-only share link. Markdown is encoded in the URL and not stored server-side."}
+        aria-label="Copy share URL"
+        onClick={onShare}
+      >
+        <Share2 className="h-3.5 w-3.5" />
+      </Button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -359,8 +387,13 @@ export function EditorToolbar({ onImport, onExport, onToggleAI, showAI }: Editor
             Export as JSON
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onExport?.("png")}>
-            Export Graph as PNG
+          <DropdownMenuItem disabled title="PDF export is scaffolded but unavailable in Phase 1.">
+            <FileWarning className="mr-2 h-3.5 w-3.5" />
+            Export PDF unavailable
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled title="PNG graph export is scaffolded but unavailable in Phase 1.">
+            <FileWarning className="mr-2 h-3.5 w-3.5" />
+            Export PNG unavailable
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -25,6 +25,7 @@ function getUIMessageText(msg: { parts?: Array<{ type: string; text?: string }> 
 export function AIChatPanel({ currentDocument, onInsert }: AIChatPanelProps) {
   const [input, setInput] = useState("")
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [modelStatus, setModelStatus] = useState<{ configured: boolean; message: string } | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const { messages, sendMessage, status } = useChat({
@@ -40,6 +41,14 @@ export function AIChatPanel({ currentDocument, onInsert }: AIChatPanelProps) {
   })
 
   const isLoading = status === "streaming" || status === "submitted"
+  const isModelAvailable = modelStatus?.configured === true
+
+  useEffect(() => {
+    fetch("/api/v1/ai/status")
+      .then((response) => response.json())
+      .then((payload) => setModelStatus(payload.data ?? { configured: false, message: "Model status unavailable." }))
+      .catch(() => setModelStatus({ configured: false, message: "Model status unavailable." }))
+  }, [])
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -49,7 +58,7 @@ export function AIChatPanel({ currentDocument, onInsert }: AIChatPanelProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim() || isLoading) return
+    if (!input.trim() || isLoading || !isModelAvailable) return
     sendMessage({ text: input })
     setInput("")
   }
@@ -81,7 +90,9 @@ export function AIChatPanel({ currentDocument, onInsert }: AIChatPanelProps) {
             <div className="rounded-lg bg-muted/50 p-4 text-center">
               <Bot className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                Ask me anything about your markdown document or let me help you write.
+                {isModelAvailable
+                  ? "Ask me anything about your markdown document or let me help you write."
+                  : modelStatus?.message ?? "Checking backend model availability..."}
               </p>
             </div>
             <div className="space-y-2">
@@ -96,7 +107,8 @@ export function AIChatPanel({ currentDocument, onInsert }: AIChatPanelProps) {
                     onClick={() => {
                       sendMessage({ text: action.prompt })
                     }}
-                    disabled={isLoading}
+                    disabled={isLoading || !isModelAvailable}
+                    title={isModelAvailable ? action.label : "Model-backed AI is unavailable. Deterministic Markdown parsing, outline, preview, and exports still work."}
                   >
                     {action.label}
                   </Button>
@@ -190,9 +202,10 @@ export function AIChatPanel({ currentDocument, onInsert }: AIChatPanelProps) {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your markdown..."
             disabled={isLoading}
+            title={isModelAvailable ? "Ask the backend model about your Markdown." : "Model-backed AI is unavailable in this deployment."}
             className="flex-1"
           />
-          <Button type="submit" size="icon" disabled={isLoading || !input.trim()} aria-label="Send message" title="Send message">
+          <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !isModelAvailable} aria-label="Send message" title={isModelAvailable ? "Send message" : "Model-backed AI unavailable"}>
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (

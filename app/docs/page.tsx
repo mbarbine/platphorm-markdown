@@ -5,6 +5,8 @@ import { SiteFooter } from "@/components/site-footer"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { ExternalLink, Code2, FileJson, Sparkles, Download, FileText, Network, Plug, Globe } from "lucide-react"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import { JsonLd, generateBreadcrumbSchema } from "@/components/json-ld"
 
 export const metadata = {
   title: `📚 Documentation - ${siteConfig.name}`,
@@ -12,13 +14,31 @@ export const metadata = {
 }
 
 export default function DocsPage() {
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: siteConfig.url },
+    { name: "Docs", url: `${siteConfig.url}/docs` },
+  ])
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <JsonLd type="TechArticle" data={{ headline: "MarkdownTree Documentation", url: `${siteConfig.url}/docs` }} />
+      <JsonLd type="BreadcrumbList" data={{ items: breadcrumbs }} />
       <SiteHeader />
       
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <div className="mb-12">
+            <Breadcrumb className="mb-8">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild><Link href="/">Home</Link></BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Docs</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <Badge className="mb-4">v{siteConfig.version}</Badge>
             <h1 className="text-4xl font-bold mb-4">📚 Documentation</h1>
             <p className="text-lg text-muted-foreground">
@@ -87,7 +107,7 @@ export default function DocsPage() {
             <div className="rounded-lg border border-border bg-card p-6 mb-6">
               <p className="text-muted-foreground mb-4">
                 MarkdownTree is fully compatible with the <strong>Model Context Protocol (MCP)</strong>.
-                Connect your AI agents, LLM workflows, and automation tools to MarkdownTree&apos;s capabilities.
+                Connect agents, LLM workflows, and automation tools to MarkdownTree&apos;s real Markdown parsing, graph, outline, stats, and export capabilities.
               </p>
               <div className="space-y-4">
                 <div className="rounded-lg bg-muted p-4">
@@ -120,9 +140,11 @@ export default function DocsPage() {
                     <span>📋</span> Available MCP Tools
                   </h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• <code className="text-primary">parseMarkdown</code> — Parse markdown content into a graph structure</li>
-                    <li>• <code className="text-primary">exportDocument</code> — Export to Markdown, HTML, or JSON</li>
-                    <li>• <code className="text-primary">aiEnhance</code> — AI-powered text enhancement</li>
+                    <li>• <code className="text-primary">parse_markdown</code> — Parse Markdown content into graph, outline, and stats data</li>
+                    <li>• <code className="text-primary">export_html</code> — Export sanitized standalone HTML</li>
+                    <li>• <code className="text-primary">export_json</code> — Export structured Markdown graph JSON</li>
+                    <li>• <code className="text-primary">generate_table_of_contents</code> — Generate a deterministic TOC from real headings</li>
+                    <li>• <code className="text-primary">export_pdf</code> / <code className="text-primary">export_png</code> — Return degraded unavailable states until implemented</li>
                   </ul>
                 </div>
               </div>
@@ -169,6 +191,9 @@ export default function DocsPage() {
   -H "Content-Type: application/json" \\
   -d '{"markdown": "# Draft", "action": "improve"}'`}
                 </pre>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  This returns an honest model-unavailable state unless a backend provider is configured. Deterministic table-of-contents generation is available at <code className="text-primary">/api/v1/ai/toc</code>.
+                </p>
               </div>
             </div>
           </section>
@@ -200,18 +225,23 @@ export default function DocsPage() {
                   </tr>
                   <tr>
                     <td className="p-4"><Badge variant="secondary">POST</Badge></td>
+                    <td className="p-4 font-mono text-sm">/api/v1/parse</td>
+                    <td className="p-4 text-muted-foreground">Parse Markdown to graph, outline, and stats</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4"><Badge variant="secondary">POST</Badge></td>
                     <td className="p-4 font-mono text-sm">/api/v1/transform</td>
-                    <td className="p-4 text-muted-foreground">📊 Parse markdown to graph</td>
+                    <td className="p-4 text-muted-foreground">Transform Markdown to graph</td>
                   </tr>
                   <tr>
                     <td className="p-4"><Badge variant="secondary">POST</Badge></td>
                     <td className="p-4 font-mono text-sm">/api/v1/export</td>
-                    <td className="p-4 text-muted-foreground">📤 Export document</td>
+                    <td className="p-4 text-muted-foreground">Export Markdown, HTML, JSON, or degraded PDF/PNG state</td>
                   </tr>
                   <tr>
                     <td className="p-4"><Badge variant="secondary">POST</Badge></td>
                     <td className="p-4 font-mono text-sm">/api/v1/ai/enhance</td>
-                    <td className="p-4 text-muted-foreground">🤖 AI enhancement</td>
+                    <td className="p-4 text-muted-foreground">Model-backed enhancement when configured; degraded otherwise</td>
                   </tr>
                   <tr>
                     <td className="p-4"><Badge variant="secondary">POST</Badge></td>

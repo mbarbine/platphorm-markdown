@@ -59,7 +59,8 @@ export default function TermsPage() {
           <h2>Description of Service</h2>
           <p>
             {siteConfig.name} provides a web-based markdown editor with graph visualization
-            and AI-powered enhancement features.
+            plus public-safe parsing, preview, outline, stats, and export features. Backend
+            model assistance is optional and reports a degraded state when unavailable.
           </p>
 
           <h2>Use License</h2>
@@ -76,8 +77,9 @@ export default function TermsPage() {
 
           <h2>AI Features</h2>
           <p>
-            AI-generated content is provided as-is. You are responsible for reviewing and
-            verifying any AI-generated suggestions before use.
+            Model-generated content, when configured, is provided as-is. You are responsible
+            for reviewing and verifying any suggestions before use. When no backend model is
+            configured, MarkdownTree does not fake AI output.
           </p>
 
           <h2>Limitations</h2>

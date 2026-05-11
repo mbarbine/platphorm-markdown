@@ -24,7 +24,7 @@ export async function GET() {
     capabilities: {
       api: true,
       mcp: true,
-      ai: true,
+      ai: "degraded-until-provider-configured",
       collaboration: false,
       i18n: ["en"],
     },
@@ -49,6 +49,7 @@ export async function GET() {
       features: {
         transform: `${siteConfig.url}/api/v1/transform`,
         export: `${siteConfig.url}/api/v1/export`,
+        aiStatus: `${siteConfig.url}/api/v1/ai/status`,
         aiEnhance: `${siteConfig.url}/api/v1/ai/enhance`,
         aiChat: `${siteConfig.url}/api/v1/ai/chat`,
       },
@@ -57,10 +58,6 @@ export async function GET() {
     social: {
       github: siteConfig.links.github,
       twitter: siteConfig.links.twitter,
-    },
-    
-    support: {
-      coinbase: siteConfig.coinbase,
     },
     
     metadata: {
