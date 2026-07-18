@@ -51,7 +51,7 @@ Open [http://localhost:3000](http://localhost:3000) and start editing.
 | 🧩 UI | [React 18](https://react.dev/) · [Tailwind CSS](https://tailwindcss.com/) · [shadcn/ui](https://ui.shadcn.com/) |
 | ✏️ Editor | [Monaco Editor](https://microsoft.github.io/monaco-editor/) |
 | 📊 Graph | [ReactFlow](https://reactflow.dev/) |
-| 🤖 AI | [Vercel AI SDK](https://sdk.vercel.ai/) |
+| 🤖 AI | [AI SDK](https://ai-sdk.dev/) |
 | 🔤 Language | [TypeScript 5](https://www.typescriptlang.org/) |
 
 ---
