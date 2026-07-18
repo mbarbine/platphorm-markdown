@@ -1,0 +1,35 @@
+﻿{
+  "version": ""1.0.0"",
+  "service": ""markdown"",
+  "publicOperations": [
+    {
+        "method":  "read",
+        "path":  "/",
+        "note":  "Read public pages and documentation"
+    },
+    {
+        "method":  "head",
+        "path":  "/",
+        "note":  "Health checks and URL probing"
+    },
+    {
+        "method":  "get",
+        "path":  "/status",
+        "note":  "Read public status pages"
+    },
+    {
+        "method":  "get",
+        "path":  "/api/health",
+        "note":  "Read health endpoint"
+    }
+]
+,
+  "protectedOperations": [
+    { "method": ""post"", "path": ""/api/admin"", "note": ""Protected admin operations"" }
+  ],
+  "disallowedOperations": [
+    { "method": ""delete"", "path": ""/*"", "note": ""Not allowed for anonymous agents"" },
+    { "method": ""patch"", "path": ""/*"", "note": ""Not allowed for anonymous agents"" }
+  ],
+  "aiUsagePolicy": ""Use public operations for discovery and read-only research."
+}

@@ -1,0 +1,24 @@
+﻿markdown service discovery page.
+Primary domain: https://markdown.platphormnews.com
+
+Overview:
+This endpoint supports public discovery and AI-readiness tooling for the markdown service in the PlatPhorm News network.
+
+Useful endpoints:
+- https://markdown.platphormnews.com/
+- https://markdown.platphormnews.com/support
+- https://markdown.platphormnews.com/status
+- https://markdown.platphormnews.com/faq
+- https://markdown.platphormnews.com/api/health
+- https://markdown.platphormnews.com/api/v1/health
+- https://markdown.platphormnews.com/api/docs
+- https://markdown.platphormnews.com/openapi.yaml
+- https://markdown.platphormnews.com/openapi.json
+- https://markdown.platphormnews.com/llms.txt
+- https://markdown.platphormnews.com/llms-full.txt
+- https://markdown.platphormnews.com/robots.txt
+- https://markdown.platphormnews.com/sitemap.xml
+- https://markdown.platphormnews.com/rss.xml
+- https://markdown.platphormnews.com/feed.xml
+- https://markdown.platphormnews.com/.well-known/mcp.json
+- https://markdown.platphormnews.com/.well-known/agents.json

@@ -1,0 +1,28 @@
+﻿openapi: 3.1.0
+info:
+  title: markdown API
+  version: 1.0.0
+tags:
+  - name: Health
+    description: Public health checks
+servers:
+  - url: https://markdown.platphormnews.com
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service health
+  /api/v1/health:
+    get:
+      summary: Health check v1
+      operationId: getHealthV1
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service health

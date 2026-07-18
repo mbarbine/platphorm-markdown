@@ -1,0 +1,7 @@
+﻿# llms.txt for markdown
+
+- https://markdown.platphormnews.com/
+- https://markdown.platphormnews.com/support
+- https://markdown.platphormnews.com/status
+- https://markdown.platphormnews.com/faq
+- https://markdown.platphormnews.com/api/health

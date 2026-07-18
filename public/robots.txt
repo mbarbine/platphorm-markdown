@@ -1,0 +1,25 @@
+﻿User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: PerplexityUser
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: *
+Disallow:
+
+Sitemap: https://markdown.platphormnews.com/sitemap.xml

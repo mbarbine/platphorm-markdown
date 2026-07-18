@@ -1,0 +1,7 @@
+﻿{
+  "name": ""markdown",
+  "version": ""1.0.0"",
+  "description": ""MCP discovery manifest for markdown",
+  "apiUrl": ""https://markdown.platphormnews.com/api/mcp"",
+  "protocol": ""json-rpc-2.0"
+}
