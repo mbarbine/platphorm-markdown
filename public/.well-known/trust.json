@@ -1,8 +1,8 @@
-﻿{
-  "version": ""1.0.0"",
-  "site": ""markdown"",
-  "publisher": ""PlatPhorm"",
-  "contact": ""mailto:hello@platphormnews.com"",
-  "updatedAt": ""2026-07-18T19:04:19.130-04:00"",
-  "aiDisclosure": ""Public content is intended for answer engine indexing with attribution requirements.""
+{
+    "version":  "1.0.0",
+    "updatedAt":  "2026-07-19T01:53:51Z",
+    "site":  "platphorm-markdown",
+    "publisher":  "PlatPhorm",
+    "aiDisclosure":  "Public content is intended for indexing with attribution and source integrity checks.",
+    "contact":  "mailto:hello@platphormnews.com"
 }

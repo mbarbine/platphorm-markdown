@@ -1,13 +1,13 @@
-﻿<?xml version=""1.0"" encoding=""UTF-8"" ?>
-<rss version=""2.0">
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
   <channel>
-    <title>markdown</title>
-    <link>https://markdown.platphormnews.com</link>
+    <title>Markdown</title>
+    <link>https://mcp.platphormnews.com</link>
     <description>Feed for the markdown service</description>
-    <lastBuildDate>2026-07-18T19:04:19.130-04:00</lastBuildDate>
+    <lastBuildDate>Sun, 19 Jul 2026 01:53:51 GMT</lastBuildDate>
     <item>
-      <title>markdown service status</title>
-      <link>https://markdown.platphormnews.com/status</link>
+      <title>Markdown service status</title>
+      <link>https://mcp.platphormnews.com/status</link>
       <description>Current status and discovery summary.</description>
     </item>
   </channel>

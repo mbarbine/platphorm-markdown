@@ -1,10 +1,26 @@
-﻿{
-  "generated": ""2026-07-18T19:04:19.130-04:00"",
-  "version": ""1.0.0"",
-  "site": ""System.Management.Automation.Internal.Host.InternalHost"",
-  "primary": [
-    { "url": ""https://markdown.platphormnews.com/"", "title": ""markdown"", "description": ""Primary service landing page."" },
-    { "url": ""https://markdown.platphormnews.com/status/contracts"", "title": ""Service contracts"", "description": ""Contracts and support status."" },
-    { "url": ""https://markdown.platphormnews.com/faq"", "title": ""FAQ"", "description": ""Frequently asked questions."" }
-  ]
+{
+    "version":  "1.0.0",
+    "service":  "Markdown",
+    "resources":  [
+                      {
+                          "url":  "https://mcp.platphormnews.com/llms.txt",
+                          "mediaType":  "text/plain",
+                          "purpose":  "Concise service map"
+                      },
+                      {
+                          "url":  "https://mcp.platphormnews.com/llms-full.txt",
+                          "mediaType":  "text/plain",
+                          "purpose":  "Detailed public docs map"
+                      },
+                      {
+                          "url":  "https://mcp.platphormnews.com/openapi.json",
+                          "mediaType":  "application/json",
+                          "purpose":  "Public API contract"
+                      },
+                      {
+                          "url":  "https://mcp.platphormnews.com/.well-known/mcp.json",
+                          "mediaType":  "application/json",
+                          "purpose":  "MCP discovery manifest"
+                      }
+                  ]
 }

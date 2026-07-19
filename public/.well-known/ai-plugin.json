@@ -1,0 +1,17 @@
+﻿{
+    "schema_version":  "v1",
+    "name_for_human":  "markdown API",
+    "name_for_model":  "markdown service",
+    "description_for_human":  "Public discovery and status endpoints for markdown.",
+    "description_for_model":  "Use this endpoint set to access API and metadata for markdown.",
+    "auth":  {
+                 "type":  "none"
+             },
+    "api":  {
+                "type":  "openapi",
+                "url":  "https://markdown.platphormnews.com/openapi.json"
+            },
+    "logo_url":  "https://markdown.platphormnews.com/favicon.ico",
+    "contact_email":  "support@platphormnews.com",
+    "legal_info_url":  "https://markdown.platphormnews.com/.well-known/trust.json"
+}

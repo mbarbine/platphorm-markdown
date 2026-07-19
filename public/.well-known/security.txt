@@ -1,4 +1,5 @@
-﻿Contact: mailto:security@platphormnews.com
-Expires: 2027-01-01T00:00:00.000Z
+Contact: mailto:hello@platphormnews.com
 Preferred-Languages: en
-Canonical: https://markdown.platphormnews.com/.well-known/security.txt
+Canonical: https://mcp.platphormnews.com
+Policy: https://www.rfc-editor.org/rfc/rfc9116.txt
+Expires: 2027-07-19T01:53:51Z

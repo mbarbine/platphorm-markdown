@@ -1,10 +1,17 @@
-﻿User-agent: ChatGPT-User
+User-agent: *
 Allow: /
+Disallow: /_next
+Disallow: /api/private
+Disallow: /private
+Disallow: /admin
+Disallow: /internal
+Disallow: /debug
+Sitemap: https://mcp.platphormnews.com/sitemap.xml
 
 User-agent: GPTBot
 Allow: /
 
-User-agent: CCBot
+User-agent: ChatGPT-User
 Allow: /
 
 User-agent: Claude-Web
@@ -19,7 +26,29 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-User-agent: *
-Disallow:
+User-agent: Copilot-User
+Allow: /
 
-Sitemap: https://markdown.platphormnews.com/sitemap.xml
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Anthropic
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: BingPreview
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Grok
+Allow: /
