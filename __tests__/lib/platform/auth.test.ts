@@ -8,6 +8,7 @@ jest.mock("next/server", () => ({
 }))
 
 import { getAuthPolicy, isApiKeyEnforcementEnabled } from "@/lib/platform/auth"
+import { siteConfig } from "@/lib/platphorm/config"
 
 describe("PlatPhorm auth policy", () => {
   const original = process.env.PLATPHORM_REQUIRE_API_KEY
@@ -26,5 +27,11 @@ describe("PlatPhorm auth policy", () => {
     const policy = getAuthPolicy()
     expect(policy.acceptedHeaders.join(" ")).toContain("PLATPHORM_API_KEY")
     expect(policy.acceptedHeaders.join(" ")).not.toContain("MARKDOWN_API_KEY")
+  })
+
+  it("publishes the canonical platform trust boundary", () => {
+    expect(siteConfig.trustPolicyLine).toContain(
+      "Mutating, administrative, ingestion, replay, fork, remediation, deployment, sync, test-triggering, reporting, and write actions require PLATPHORM_API_KEY.",
+    )
   })
 })

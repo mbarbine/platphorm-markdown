@@ -23,7 +23,7 @@ export const siteConfig = {
     storage: "browser-local",
   },
   trustPolicyLine:
-    "Public-safe Markdown editing, graph visualization, formatting, preview, local non-sensitive Markdown draft persistence, read-only MCP introspection, RSS/feed consumption, trusted-domain discovery, standard route compliance, Vercel metadata capture, backend model scaffolding, and trace-linked Markdown operations are intentionally supported for public use. PLATPHORM_API_KEY support is scaffolded for future protected backend services, server-side exports, AI enhancement calls, webhook mutation, sync, test-triggering, reporting, administrative actions, and sensitive operations.",
+    "Web dashboard, public-safe discovery, browser-based operations, trusted-domain discovery, standard route compliance, Vercel metadata capture, trace inspection, and agentic workflow discovery are intentionally supported for public read-only debugging and operator workflows. Mutating, administrative, ingestion, replay, fork, remediation, deployment, sync, test-triggering, reporting, and write actions require PLATPHORM_API_KEY. Browser-local Markdown editing, graph visualization, formatting, preview, and non-sensitive draft persistence remain public product capabilities. Server-side exports, AI enhancement calls, webhook mutation, and document persistence are protected actions.",
 }
 
 export const markdownNodeTypes = {
