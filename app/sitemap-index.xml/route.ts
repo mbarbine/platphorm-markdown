@@ -12,6 +12,10 @@ export async function GET() {
     <loc>${siteConfig.url}/sitemap-main.xml</loc>
     <lastmod>${now}</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>${siteConfig.url}/sitemap-full.xml</loc>
+    <lastmod>${now}</lastmod>
+  </sitemap>
 </sitemapindex>`
 
   return new Response(xml, {

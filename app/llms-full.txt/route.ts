@@ -24,7 +24,7 @@ It is not Trace, Docs, MCP, Claws, Evals, BrowserOps, Sandbox, Webhooks, AgentUI
 - Share URLs are bounded and URL-only.
 - Markdown, HTML, and JSON export are active.
 - PDF and PNG export return explicit degraded states.
-- Model-backed AI endpoints return degraded states unless a backend provider is configured.
+- Model-backed AI endpoints return degraded states because the execution adapter is not connected, even when provider credentials are detected.
 
 ## Auth
 

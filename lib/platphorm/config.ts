@@ -8,7 +8,7 @@ export const siteConfig = {
     twitter: "https://twitter.com/platphormnews",
   },
   creator: "Platphorm News",
-  version: "1.0.0",
+  version: "1.3.0",
   api: {
     version: "v1",
     basePath: "/api/v1",

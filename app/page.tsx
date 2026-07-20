@@ -84,7 +84,7 @@ const features = [
     bg: "bg-amber-500/10",
     title: "AI Enhancements",
     description:
-      "Open the assistant panel to see model availability. Table-of-contents generation works deterministically; model-backed writing assistance shows an honest degraded state until configured.",
+      "Open the assistant panel to see model availability. Table-of-contents generation works deterministically; model-backed writing assistance remains honestly degraded until an execution adapter is connected.",
   },
   {
     icon: Eye,

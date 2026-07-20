@@ -1,6 +1,0 @@
-Markdown public docs: https://mcp.platphormnews.com
-https://mcp.platphormnews.com/
-https://mcp.platphormnews.com/api/health
-https://mcp.platphormnews.com/.well-known/mcp.json
-https://mcp.platphormnews.com/openapi.json
-https://mcp.platphormnews.com/rss.xml

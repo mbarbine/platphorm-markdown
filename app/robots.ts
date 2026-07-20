@@ -22,7 +22,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: ["/", "/llms.txt", "/llms-full.txt"],
       },
     ],
-    sitemap: [`${siteConfig.url}/sitemap.xml`, `${siteConfig.url}/sitemap-main.xml`, `${siteConfig.url}/sitemap-index.xml`],
+    sitemap: [`${siteConfig.url}/sitemap.xml`, `${siteConfig.url}/sitemap-main.xml`, `${siteConfig.url}/sitemap-full.xml`, `${siteConfig.url}/sitemap-index.xml`],
     host: siteConfig.url,
   }
 }

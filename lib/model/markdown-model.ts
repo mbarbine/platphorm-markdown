@@ -22,19 +22,19 @@ export function getModelStatus(): ModelStatus {
   if (process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_AI_GATEWAY_API_KEY) {
     return {
       configured: true,
-      status: "available",
+      status: "degraded",
       provider: "vercel-ai-gateway",
       model: model ?? "gateway-default",
-      message: "Backend model provider is configured. Model calls remain server-only.",
+      message: "Vercel AI Gateway credentials are detected, but the Markdown generation adapter is not connected. Deterministic tools remain available.",
     }
   }
   if (process.env.OPENAI_API_KEY && model) {
     return {
       configured: true,
-      status: "available",
+      status: "degraded",
       provider: "openai-compatible",
       model,
-      message: "Backend OpenAI-compatible model provider is configured. Model calls remain server-only.",
+      message: "OpenAI-compatible credentials are detected, but the Markdown generation adapter is not connected. Deterministic tools remain available.",
     }
   }
   return {

@@ -1,5 +1,0 @@
-Contact: mailto:hello@platphormnews.com
-Preferred-Languages: en
-Canonical: https://mcp.platphormnews.com
-Policy: https://www.rfc-editor.org/rfc/rfc9116.txt
-Expires: 2027-07-19T01:53:51Z

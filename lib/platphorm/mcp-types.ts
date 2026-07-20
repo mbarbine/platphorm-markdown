@@ -37,7 +37,7 @@ export interface MCPConfig {
 }
 
 export const mcpConfig: MCPConfig = {
-  version: "1.0.0",
+  version: "1.3.0",
   name: "MarkdownTree MCP",
   description: "Model Context Protocol for MarkdownTree - Visual Markdown Editor & Graph Viewer",
   endpoints: [

@@ -108,14 +108,19 @@ describe("parsePagination", () => {
 })
 
 describe("corsHeaders", () => {
-  it("returns wildcard origin by default", () => {
+  it("returns the canonical trusted origin by default", () => {
     const headers = corsHeaders()
-    expect(headers["Access-Control-Allow-Origin"]).toBe("*")
+    expect(headers["Access-Control-Allow-Origin"]).toBe("https://markdown.platphormnews.com")
   })
 
-  it("returns specific origin when provided", () => {
+  it("allows another trusted PlatPhormNews origin", () => {
+    const headers = corsHeaders("https://docs.platphormnews.com")
+    expect(headers["Access-Control-Allow-Origin"]).toBe("https://docs.platphormnews.com")
+  })
+
+  it("does not reflect an untrusted origin", () => {
     const headers = corsHeaders("https://example.com")
-    expect(headers["Access-Control-Allow-Origin"]).toBe("https://example.com")
+    expect(headers["Access-Control-Allow-Origin"]).toBeUndefined()
   })
 
   it("includes standard CORS headers", () => {

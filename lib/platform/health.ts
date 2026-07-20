@@ -2,17 +2,28 @@ import { siteConfig } from "@/lib/platphorm/config"
 import { getAuthPolicy } from "@/lib/platform/auth"
 import { discoveryComplianceSummary, routeComplianceSummary } from "@/lib/platform/routes"
 import { getModelStatus } from "@/lib/model/markdown-model"
+import { safeVercelMetadata } from "@/lib/platform/trace"
 
-export function buildHealth() {
+export function buildHealth(headers?: Headers) {
   const routeCompliance = routeComplianceSummary()
   const discoveryCompliance = discoveryComplianceSummary()
   const model = getModelStatus()
+  const requestHeaders = headers ?? new Headers()
+  const traceAcceptanceEvidence = requestHeaders.get("x-platphorm-trace-accepted")
+  const traceContextAccepted = traceAcceptanceEvidence === "true" || (traceAcceptanceEvidence === null && requestHeaders.has("traceparent"))
+  const vercelMetadata = safeVercelMetadata(requestHeaders)
+  const vercelMetadataCaptured = Boolean(
+    vercelMetadata.id || vercelMetadata.country || vercelMetadata.region || vercelMetadata.city || vercelMetadata.timezone,
+  )
+  const traceExportEnabled = Boolean(
+    process.env.OTEL_EXPORTER_OTLP_ENDPOINT || process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+  )
 
   return {
     service: "markdown",
     name: siteConfig.name,
     version: siteConfig.version,
-    environment: process.env.NODE_ENV ?? "unknown",
+    environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
     status: "healthy",
     timestamp: new Date().toISOString(),
     uptime: typeof process.uptime === "function" ? process.uptime() : null,
@@ -23,12 +34,12 @@ export function buildHealth() {
         ? "Database URL is configured; persistent server features can be layered behind protected actions."
         : "No DATABASE_URL configured. Markdown documents are not stored server-side; local drafts use browser storage.",
     },
-    cache: { status: "degraded", message: "No shared cache is required for public-safe Phase 1 Markdown tools." },
+    cache: { status: "not_applicable", message: "Public-safe Markdown tools are deterministic and do not require shared cache state." },
     mcp: { status: "healthy", endpoint: "/api/mcp", jsonRpc: "2.0" },
     model,
     auth: getAuthPolicy(),
     routeComplianceScore: routeCompliance.score,
-    observabilityComplianceScore: 0.75,
+    observabilityComplianceScore: traceExportEnabled ? 0.9 : 0.75,
     discoveryStatus: discoveryCompliance.status,
     rssStatus: discoveryCompliance.rssStatus,
     sitemapStatus: discoveryCompliance.sitemapStatus,
@@ -36,14 +47,18 @@ export function buildHealth() {
     openapiStatus: discoveryCompliance.openapiStatus,
     trustedDomainStatus: "platphormnews_wildcard_public_read",
     traceEnabled: true,
-    traceExportEnabled: false,
-    traceContextAccepted: true,
-    traceContextPropagated: true,
+    traceExportEnabled,
+    traceContextAccepted,
+    traceContextPropagated: traceContextAccepted,
     lastTraceExportAt: null,
-    spansEmittedLast24h: "local_response_headers_only",
-    propagationTestStatus: "degraded_no_external_trace_export_configured",
-    redactionStatus: "enabled",
-    vercelMetadataCaptured: true,
+    spansEmittedLast24h: null,
+    propagationTestStatus: traceExportEnabled ? "not_run" : "degraded_no_external_trace_export_configured",
+    redactionStatus: "safe_headers_only",
+    vercelMetadataCaptured,
+    vercelMetadata,
+    lastNetworkSyncAt: null,
+    lastSitemapSyncAt: null,
+    lastFeedSyncAt: null,
     publicAccess: {
       homepage: "public",
       editor: "public-safe",
@@ -52,7 +67,7 @@ export function buildHealth() {
       preview: "public-safe",
       markdownHtmlJsonExports: "public-safe",
       pdfPngExports: "future-protected-degraded",
-      aiEnhancements: model.configured ? "future-protected-configured" : "future-protected-degraded",
+      aiEnhancements: model.configured ? "credentials-detected-adapter-degraded" : "future-protected-degraded",
       webhooks: "unsupported-degraded",
     },
   }

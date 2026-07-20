@@ -144,7 +144,7 @@ export default function DocsPage() {
                     <li>• <code className="text-primary">export_html</code> — Export sanitized standalone HTML</li>
                     <li>• <code className="text-primary">export_json</code> — Export structured Markdown graph JSON</li>
                     <li>• <code className="text-primary">generate_table_of_contents</code> — Generate a deterministic TOC from real headings</li>
-                    <li>• <code className="text-primary">export_pdf</code> / <code className="text-primary">export_png</code> — Return degraded unavailable states until implemented</li>
+                    <li>Unavailable PDF, PNG, and model-backed operations remain documented in REST discovery but are not advertised as executable MCP tools.</li>
                   </ul>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function DocsPage() {
   -d '{"markdown": "# Draft", "action": "improve"}'`}
                 </pre>
                 <p className="mt-3 text-sm text-muted-foreground">
-                  This returns an honest model-unavailable state unless a backend provider is configured. Deterministic table-of-contents generation is available at <code className="text-primary">/api/v1/ai/toc</code>.
+                  This returns an honest degraded state until a model execution adapter is connected. Deterministic table-of-contents generation is available at <code className="text-primary">/api/v1/ai/toc</code>.
                 </p>
               </div>
             </div>
@@ -241,7 +241,7 @@ export default function DocsPage() {
                   <tr>
                     <td className="p-4"><Badge variant="secondary">POST</Badge></td>
                     <td className="p-4 font-mono text-sm">/api/v1/ai/enhance</td>
-                    <td className="p-4 text-muted-foreground">Model-backed enhancement when configured; degraded otherwise</td>
+                    <td className="p-4 text-muted-foreground">Degraded until a model execution adapter is connected</td>
                   </tr>
                   <tr>
                     <td className="p-4"><Badge variant="secondary">POST</Badge></td>

@@ -13,7 +13,7 @@
 
 - ✏️ **Monaco-powered markdown editor** — full IntelliSense, syntax highlighting, and keyboard shortcuts
 - 📊 **Interactive graph visualization** — explore document structure as a node graph with ReactFlow
-- 🤖 **Model scaffolding** — deterministic table-of-contents support plus honest degraded states when no backend model provider is configured
+- 🤖 **Model scaffolding** — deterministic table-of-contents support plus honest degraded states until a model execution adapter is connected
 - 🔄 **Four view modes** — Editor · Split · Graph · Preview
 - 📤 **Export anywhere** — Markdown, HTML, and JSON output
 - 🔗 **Bounded share URLs** — encode public-safe Markdown in the URL without claiming server-side storage
@@ -35,8 +35,8 @@
 ```sh
 git clone https://github.com/mbarbine/platphorm-markdown.git
 cd platphorm-markdown
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and start editing.
@@ -70,8 +70,10 @@ MarkdownTree exposes a lightweight REST API for programmatic access:
 | `POST /api/v1/export` | Export document (Markdown, HTML, JSON) |
 | `GET /api/v1/ai/status` | Inspect backend model availability |
 | `POST /api/v1/ai/toc` | Generate a deterministic table of contents |
-| `POST /api/v1/ai/enhance` | Model-backed document enhancement when configured; degraded otherwise |
+| `POST /api/v1/ai/enhance` | Honest degraded state until a model execution adapter is connected |
 | `GET /api/docs` | Interactive API documentation |
+| `GET /api/mcp` | MCP metadata and JSON-RPC usage |
+| `POST /api/mcp` | JSON-RPC 2.0 tools, resources, and prompts |
 
 ---
 
@@ -82,6 +84,33 @@ MarkdownTree is compatible with the **Model Context Protocol (MCP)**. Connect it
 👉 **[mcp.platphormnews.com](https://mcp.platphormnews.com)**
 
 MarkdownTree is proudly registered on the [Platphorm News Network](https://platphormnews.com/api/network/graph) and adheres to its [API standards](https://platphormnews.com/api/docs).
+
+Only real Markdown handlers appear in `tools/list`. PDF/PNG export, model-backed writing, and cross-site publishing stay documented as unsupported or degraded REST capabilities until execution adapters exist; they are not advertised as successful MCP tools.
+
+## Platform contract
+
+The public contract is generated from the canonical `https://markdown.platphormnews.com` configuration:
+
+- Health: `/api/health`, `/api/v1/health`
+- API docs: `/api/docs`, `/openapi.yaml`, `/openapi.json`
+- Agent discovery: `/llms.txt`, `/llms-full.txt`, `/llms-index.json`, `/.well-known/mcp.json`, `/.well-known/agents.json`, `/.well-known/ai-plugin.json`
+- Trust and security: `/.well-known/trust.json`, `/.well-known/security.txt`
+- Crawling and feeds: `/robots.txt`, `/sitemap.xml`, `/sitemap-main.xml`, `/sitemap-full.xml`, `/sitemap-index.xml`, `/rss.xml`, `/feed.xml`
+- Attribution and install metadata: `/humans.txt`, `/manifest.webmanifest`
+
+Public-safe parsing, graphing, outlining, statistics, deterministic table-of-contents generation, and Markdown/HTML/JSON export do not require credentials. Future mutations and protected integrations accept only `Authorization: Bearer $PLATPHORM_API_KEY` or `X-PlatPhorm-API-Key: $PLATPHORM_API_KEY`. Trusted cross-origin requests are limited to `*.platphormnews.com` (plus localhost during development).
+
+W3C `traceparent` and `tracestate` are accepted. Responses emit safe PlatPhorm trace identifiers; external trace export is reported as degraded unless an OTLP endpoint is configured. Documents remain browser-local or request-scoped and are not claimed as server-persisted.
+
+## Verification
+
+```sh
+pnpm lint
+pnpm exec tsc --noEmit
+pnpm exec jest --runInBand
+pnpm build
+pnpm test:e2e
+```
 
 ---
 

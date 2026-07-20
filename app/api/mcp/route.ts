@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { generateOutline, getDocumentStats, parseMarkdownToGraph } from "@/lib/markdown/parser"
 import { exportMarkdownJson, generateBoundedShareUrl, renderMarkdownDocument, validateMarkdownInput } from "@/lib/markdown/render"
-import { deterministicTableOfContents, getModelStatus, unavailableModelResult } from "@/lib/model/markdown-model"
+import { deterministicTableOfContents, getModelStatus } from "@/lib/model/markdown-model"
 import { siteConfig } from "@/lib/platphorm/config"
 import { discoveryComplianceSummary, markdownTools, mcpPrompts, mcpResources, routeComplianceSummary } from "@/lib/platform/routes"
 import { buildHealth } from "@/lib/platform/health"
@@ -32,15 +32,28 @@ function toolList() {
   return markdownTools.map((name) => ({
     name,
     description: toolDescriptions[name] ?? "MarkdownTree tool",
-    inputSchema: {
-      type: "object",
-      properties: {
-        markdown: { type: "string", description: "Markdown content" },
-        format: { type: "string", enum: ["markdown", "html", "json", "pdf", "png"] },
-      },
-    },
+    inputSchema: markdownInputTools.has(name)
+      ? {
+          type: "object",
+          properties: { markdown: { type: "string", description: "Markdown content", maxLength: 262144 } },
+          required: ["markdown"],
+          additionalProperties: false,
+        }
+      : { type: "object", properties: {}, additionalProperties: false },
   }))
 }
+
+const markdownInputTools = new Set<(typeof markdownTools)[number]>([
+  "parse_markdown",
+  "transform_markdown_to_graph",
+  "generate_outline",
+  "get_markdown_stats",
+  "export_markdown",
+  "export_html",
+  "export_json",
+  "generate_share_url",
+  "generate_table_of_contents",
+])
 
 const toolDescriptions: Record<(typeof markdownTools)[number], string> = {
   parse_markdown: "Parse Markdown into graph nodes, edges, outline, and stats.",
@@ -50,32 +63,17 @@ const toolDescriptions: Record<(typeof markdownTools)[number], string> = {
   export_markdown: "Return Markdown source as text.",
   export_html: "Return sanitized standalone HTML.",
   export_json: "Return structured Markdown, graph, outline, and stats JSON.",
-  export_pdf: "Return an honest degraded state; PDF export is not implemented in Phase 1.",
-  export_png: "Return an honest degraded state; PNG graph export is not implemented in Phase 1.",
   generate_share_url: "Generate a bounded URL-only share link. No server content is stored.",
-  enhance_markdown: "Return model-backed Markdown enhancement when configured, otherwise degraded state.",
   generate_table_of_contents: "Generate a deterministic table of contents from real headings.",
-  summarize_markdown: "Return model-backed summary when configured, otherwise degraded state.",
   get_health: "Return MarkdownTree health and platform state.",
   get_info: "Return MarkdownTree service information.",
   get_route_compliance: "Return standard route compliance state.",
   get_discovery_compliance: "Return discovery file compliance state.",
-  create_docs_report: "Return a degraded cross-site report state; Docs publishing is not active in Phase 1.",
-  create_sheet_report: "Return a degraded cross-site report state; Sheets reporting is not active in Phase 1.",
-  create_deck_summary: "Return a degraded cross-site report state; Deck generation is not active in Phase 1.",
 }
 
 function markdownArg(params: Record<string, unknown> | undefined): string | { code: string; message: string } {
   const args = (params?.arguments ?? params ?? {}) as Record<string, unknown>
   return validateMarkdownInput(args.markdown ?? args.content)
-}
-
-function degradedReport(target: "docs" | "sheets" | "decks") {
-  return {
-    status: "degraded",
-    target,
-    message: `${target} integration is not enabled for Phase 1 MarkdownTree. The tool reports this boundary instead of faking a report.`,
-  }
 }
 
 function callTool(name: string, params: Record<string, unknown> | undefined, request: Request) {
@@ -109,16 +107,6 @@ function callTool(name: string, params: Record<string, unknown> | undefined, req
       if (typeof markdown !== "string") return { isError: true, content: textContent(markdown) }
       return { content: textContent(exportMarkdownJson(markdown)) }
     }
-    case "export_pdf":
-    case "export_png":
-      return {
-        isError: true,
-        content: textContent({
-          status: "degraded",
-          format: name === "export_pdf" ? "pdf" : "png",
-          message: "This server-side export format is scaffolded but not implemented in Phase 1.",
-        }),
-      }
     case "generate_share_url": {
       if (typeof markdown !== "string") return { isError: true, content: textContent(markdown) }
       const url = generateBoundedShareUrl(markdown, new URL(request.url).origin)
@@ -130,24 +118,14 @@ function callTool(name: string, params: Record<string, unknown> | undefined, req
       if (typeof markdown !== "string") return { isError: true, content: textContent(markdown) }
       return { content: [{ type: "text", text: deterministicTableOfContents(markdown) }] }
     }
-    case "enhance_markdown":
-      return { isError: true, content: textContent(unavailableModelResult("improve")) }
-    case "summarize_markdown":
-      return { isError: true, content: textContent(unavailableModelResult("summarize")) }
     case "get_health":
-      return { content: textContent(buildHealth()) }
+      return { content: textContent(buildHealth(request.headers)) }
     case "get_info":
       return { content: textContent({ service: "markdown", name: siteConfig.name, url: siteConfig.url, version: siteConfig.version, auth: getAuthPolicy(), model: getModelStatus() }) }
     case "get_route_compliance":
       return { content: textContent(routeComplianceSummary()) }
     case "get_discovery_compliance":
       return { content: textContent(discoveryComplianceSummary()) }
-    case "create_docs_report":
-      return { isError: true, content: textContent(degradedReport("docs")) }
-    case "create_sheet_report":
-      return { isError: true, content: textContent(degradedReport("sheets")) }
-    case "create_deck_summary":
-      return { isError: true, content: textContent(degradedReport("decks")) }
     default:
       return { isError: true, content: textContent({ code: "UNKNOWN_TOOL", message: `Unknown MarkdownTree MCP tool: ${name}` }) }
   }
@@ -192,7 +170,11 @@ function getPrompt(name: string) {
   }
 }
 
-async function handleRpc(request: JsonRpcRequest, httpRequest: Request) {
+async function handleRpc(value: unknown, httpRequest: Request) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return rpcError(null, -32600, "Invalid JSON-RPC 2.0 request")
+  }
+  const request = value as JsonRpcRequest
   if (request.jsonrpc !== "2.0" || !request.method) return rpcError(request.id, -32600, "Invalid JSON-RPC 2.0 request")
 
   switch (request.method) {
@@ -218,7 +200,7 @@ async function handleRpc(request: JsonRpcRequest, httpRequest: Request) {
           uri,
           name: uri.replace("markdown://", ""),
           description: `MarkdownTree ${uri.replace("markdown://", "").replace(/[{}]/g, "")} resource`,
-          mimeType: uri.includes("llms") || uri.includes("openapi") || uri.includes("trust") ? "application/json" : "text/markdown",
+          mimeType: uri === "markdown://examples" ? "text/markdown" : "application/json",
         })),
       })
     case "resources/read": {
@@ -242,37 +224,50 @@ async function handleRpc(request: JsonRpcRequest, httpRequest: Request) {
   }
 }
 
+async function handleRpcPayload(body: unknown, request: Request) {
+  if (Array.isArray(body)) {
+    if (body.length === 0) return rpcError(null, -32600, "Invalid JSON-RPC 2.0 request: batch must not be empty")
+    return Promise.all(body.map((item) => handleRpc(item, request)))
+  }
+  return handleRpc(body, request)
+}
+
 export async function POST(request: Request) {
   let body: unknown
   const trace = createTraceContext(request.headers, "mcp")
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json(rpcError(null, -32700, "Parse error"), { status: 400 })
+    const response = NextResponse.json(rpcError(null, -32700, "Parse error"), { status: 400 })
+    Object.entries(traceHeaders(trace)).forEach(([key, value]) => response.headers.set(key, value))
+    return response
   }
 
-  const result = Array.isArray(body)
-    ? await Promise.all(body.map((item) => handleRpc(item as JsonRpcRequest, request)))
-    : await handleRpc(body as JsonRpcRequest, request)
+  const result = await handleRpcPayload(body, request)
 
   const response = NextResponse.json(result)
   Object.entries(traceHeaders(trace)).forEach(([key, value]) => response.headers.set(key, value))
   return response
 }
 
-export async function GET() {
-  return NextResponse.json({
+export async function GET(request: Request) {
+  const trace = createTraceContext(request.headers, "mcp-metadata")
+  const response = NextResponse.json({
     ok: true,
-    service: "markdown",
-    endpoint: "/api/mcp",
-    transport: "http-json-rpc",
-    jsonrpc: "2.0",
-    methods: ["initialize", "ping", "tools/list", "tools/call", "resources/list", "resources/read", "prompts/list", "prompts/get"],
-    tools: markdownTools,
-    resources: mcpResources,
-    prompts: mcpPrompts,
-    publicAccess: "read-only introspection and bounded public-safe Markdown tools",
-    auth: getAuthPolicy(),
-    trace: { traceRequired: true, traceUrlTemplate: `${traceLink("{traceId}")}` },
+    data: {
+      service: "markdown",
+      endpoint: "/api/mcp",
+      transport: "http-json-rpc",
+      jsonrpc: "2.0",
+      methods: ["initialize", "ping", "tools/list", "tools/call", "resources/list", "resources/read", "prompts/list", "prompts/get"],
+      tools: markdownTools,
+      resources: mcpResources,
+      prompts: mcpPrompts,
+      publicAccess: "read-only introspection and bounded public-safe Markdown tools",
+      auth: getAuthPolicy(),
+      trace: { traceRequired: false, traceAccepted: true, traceUrlTemplate: `${traceLink("{traceId}")}` },
+    },
   })
+  Object.entries(traceHeaders(trace)).forEach(([key, value]) => response.headers.set(key, value))
+  return response
 }

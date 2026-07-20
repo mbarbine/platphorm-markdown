@@ -123,10 +123,14 @@ export function parsePagination(searchParams: URLSearchParams) {
 
 // CORS headers
 export function corsHeaders(origin?: string) {
+  const requestedOrigin = origin ?? siteConfig.url
+  const trustedOrigin = /^https:\/\/(?:[a-z0-9-]+\.)*platphormnews\.com$/i.test(requestedOrigin)
+    || (process.env.NODE_ENV !== "production" && /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/i.test(requestedOrigin))
   return {
-    "Access-Control-Allow-Origin": origin || "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-ID, X-PlatPhorm-API-Key, traceparent, tracestate, X-PlatPhorm-Request-Id",
+    ...(trustedOrigin ? { "Access-Control-Allow-Origin": requestedOrigin } : {}),
+    "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-PlatPhorm-API-Key, traceparent, tracestate, baggage, X-PlatPhorm-Request-Id, X-PlatPhorm-Source-Site, X-PlatPhorm-Target-Site",
     "Access-Control-Max-Age": "86400",
+    Vary: "Origin",
   }
 }

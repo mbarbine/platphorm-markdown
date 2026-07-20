@@ -144,13 +144,13 @@ export const openApiSpec = {
       },
     },
     "/api/v1/ai/enhance": {
-      post: { tags: ["AI"], ...postOperation("Enhance Markdown", "Returns model-backed output when configured, otherwise an honest degraded state.", "AIEnhanceRequest") },
+      post: { tags: ["AI"], ...postOperation("Enhance Markdown", "Returns an honest degraded state until a model execution adapter is connected.", "AIEnhanceRequest") },
     },
     "/api/v1/ai/toc": {
       post: { tags: ["AI"], ...postOperation("Generate table of contents", "Generate a deterministic table of contents from real headings; model support may be layered later.", "MarkdownRequest") },
     },
     "/api/v1/ai/summarize": {
-      post: { tags: ["AI"], ...postOperation("Summarize Markdown", "Returns model-backed summary when configured, otherwise an honest degraded state.", "MarkdownRequest") },
+      post: { tags: ["AI"], ...postOperation("Summarize Markdown", "Returns an honest degraded state until a model execution adapter is connected.", "MarkdownRequest") },
     },
     "/api/mcp": {
       get: {

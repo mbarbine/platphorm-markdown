@@ -1,19 +1,13 @@
 export async function GET() {
-  const mcpConfig = {
-    mcpVersion: '1.0',
-    server: {
-      name: '-markdown MCP Server',
-      url: 'https://-markdown.platphormnews.com/api/v1/mcp'
-    },
-    tools: [
-      { name: 'getHealth', description: 'Health check for this service.' }
-    ],
-    resources: {
-      graph: 'https://platphormnews.com/api/network/graph'
+  return new Response(JSON.stringify({
+    ok: true,
+    data: {
+      service: 'markdown',
+      canonicalEndpoint: 'https://markdown.platphormnews.com/api/mcp',
+      transport: 'HTTP JSON-RPC 2.0',
+      note: 'Use GET /api/mcp for metadata and POST /api/mcp for initialize, ping, tools, resources, and prompts.'
     }
-  };
-
-  return new Response(JSON.stringify(mcpConfig), {
+  }), {
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600'
