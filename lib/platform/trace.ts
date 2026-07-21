@@ -83,3 +83,92 @@ export function safeVercelMetadata(headers: Headers): SafeVercelMetadata {
 export function traceLink(traceId: string): string {
   return `https://trace.platphormnews.com/traces/${traceId}`
 }
+
+export type MarkdownSpanSummary = {
+  intent: string
+  input: string
+  output: string
+  evidence: string
+}
+
+function safeSummary(value: string) {
+  return value.replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]").slice(0, 500)
+}
+
+async function emitLifecycle(path: string, apiKey: string, context: TraceContext, payload: Record<string, unknown>) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 1_800)
+  try {
+    const response = await fetch(`${process.env.PLATPHORM_TRACE_BASE_URL || "https://trace.platphormnews.com"}${path}`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${apiKey}`,
+        "X-PlatPhorm-API-Key": apiKey,
+        ...traceHeaders(context, "trace.platphormnews.com"),
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+      signal: controller.signal,
+    })
+    return response.ok
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+export async function exportMarkdownSpan(input: {
+  context: TraceContext
+  operation: string
+  startTime: string
+  status?: "completed" | "failed"
+  summary: MarkdownSpanSummary
+}) {
+  const apiKey = process.env.PLATPHORM_API_KEY || ""
+  if (!apiKey) return { traceId: input.context.traceId, spanId: input.context.spanId, status: "disabled" as const }
+  const metadata = {
+    traceName: `Markdown ${input.operation}`,
+    agentName: "PlatPhorm Markdown",
+    sourceDomain: "markdown.platphormnews.com",
+    traceClass: "product",
+    operationFingerprint: `markdown:${input.operation}:v1`,
+    intent: safeSummary(input.summary.intent),
+    input: safeSummary(input.summary.input),
+    output: safeSummary(input.summary.output),
+    evidence: safeSummary(input.summary.evidence),
+  }
+  const common = {
+    traceId: input.context.traceId,
+    spanId: input.context.spanId,
+    parentSpanId: input.context.parentSpanId,
+    name: `Markdown ${input.operation}`,
+    kind: "SERVER",
+    sourceSite: "markdown.platphormnews.com",
+    targetSite: "markdown.platphormnews.com",
+    serviceName: "markdown",
+    apiOperation: input.operation,
+    startTime: input.startTime,
+    publicSafe: true,
+    protected: false,
+    tags: ["product"],
+    metadata,
+  }
+  const started = await emitLifecycle("/api/v1/spans/start", apiKey, input.context, common)
+  const terminal = await emitLifecycle(
+    input.status === "failed" ? "/api/v1/spans/fail" : "/api/v1/spans/complete",
+    apiKey,
+    input.context,
+    {
+      ...common,
+      endTime: new Date().toISOString(),
+      ...(input.status === "failed" ? { errorCode: "MARKDOWN_OPERATION_FAILED", errorMessage: `Markdown ${input.operation} failed.` } : {}),
+    },
+  )
+  return {
+    traceId: input.context.traceId,
+    spanId: input.context.spanId,
+    status: started && terminal ? "connected" as const : "degraded" as const,
+  }
+}

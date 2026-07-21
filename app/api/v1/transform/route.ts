@@ -1,10 +1,13 @@
 import { apiSuccess, errors, checkRateLimit, corsHeaders } from "@/lib/api/utils"
 import { parseMarkdownToGraph, generateOutline, getDocumentStats } from "@/lib/markdown/parser"
 import { validateMarkdownInput } from "@/lib/markdown/render"
-import { createTraceContext, safeVercelMetadata, traceHeaders, traceLink } from "@/lib/platform/trace"
+import { createTraceContext, exportMarkdownSpan, safeVercelMetadata, traceHeaders, traceLink } from "@/lib/platform/trace"
 import { headers } from "next/headers"
+import { after } from "next/server"
 
 export async function POST(request: Request) {
+  const startedAt = new Date().toISOString()
+  const trace = createTraceContext(request.headers, "transform")
   try {
     // Rate limiting
     const headersList = await headers()
@@ -15,7 +18,6 @@ export async function POST(request: Request) {
       return errors.rateLimited()
     }
 
-    const trace = createTraceContext(request.headers, "transform")
     const body = await request.json()
     const { markdown, options = {} } = body
 
@@ -28,6 +30,22 @@ export async function POST(request: Request) {
     const { nodes, edges } = graph
     const outline = generateOutline(validMarkdown, graph)
     const stats = getDocumentStats(validMarkdown, graph)
+    const traceExport = process.env.PLATPHORM_API_KEY ? "queued" : "disabled"
+    if (traceExport === "queued") {
+      after(async () => {
+        await exportMarkdownSpan({
+          context: trace,
+          operation: "transform",
+          startTime: startedAt,
+          summary: {
+            intent: "Transform Markdown into a graph, outline, and measured document statistics.",
+            input: `Validated ${validMarkdown.length} Markdown characters; raw document content was excluded.`,
+            output: `Produced ${nodes.length} nodes and ${edges.length} edges.`,
+            evidence: "Trace-linked transform response with graph and outline counts.",
+          },
+        })
+      })
+    }
 
     const response = apiSuccess({
       nodes,
@@ -42,11 +60,29 @@ export async function POST(request: Request) {
         traceUrl: traceLink(trace.traceId),
       },
       vercel: safeVercelMetadata(request.headers),
+      traceExport,
     })
     Object.entries(traceHeaders(trace)).forEach(([key, value]) => response.headers.set(key, value))
+    response.headers.set("X-PlatPhorm-Trace-Export", traceExport)
     return response
   } catch (error) {
     console.error("Transform error:", error)
+    if (process.env.PLATPHORM_API_KEY) {
+      after(async () => {
+        await exportMarkdownSpan({
+          context: trace,
+          operation: "transform",
+          startTime: startedAt,
+          status: "failed",
+          summary: {
+            intent: "Transform Markdown into a graph, outline, and measured document statistics.",
+            input: "Markdown request validation failed or the document could not be transformed; raw content was excluded.",
+            output: "No successful graph artifact was claimed.",
+            evidence: "Trace-linked failed transform response.",
+          },
+        })
+      })
+    }
     return errors.serverError("Failed to transform markdown")
   }
 }
