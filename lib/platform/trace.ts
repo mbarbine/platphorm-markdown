@@ -143,6 +143,7 @@ export async function exportMarkdownSpan(input: {
     traceId: input.context.traceId,
     spanId: input.context.spanId,
     parentSpanId: input.context.parentSpanId,
+    externalParent: Boolean(input.context.parentSpanId),
     name: `Markdown ${input.operation}`,
     kind: "SERVER",
     sourceSite: "markdown.platphormnews.com",
@@ -156,19 +157,41 @@ export async function exportMarkdownSpan(input: {
     metadata,
   }
   const started = await emitLifecycle("/api/v1/spans/start", apiKey, input.context, common)
+  const endTime = new Date().toISOString()
+  const childSpanId = hex(8)
+  const childCommon = {
+    ...common,
+    spanId: childSpanId,
+    parentSpanId: input.context.spanId,
+    externalParent: false,
+    name: `Execute Markdown ${input.operation}`,
+    kind: "INTERNAL",
+    apiOperation: `${input.operation}.execute`,
+    metadata: {
+      ...metadata,
+      operationFingerprint: `markdown:${input.operation}:execute:v1`,
+    },
+  }
+  const childStarted = started && await emitLifecycle("/api/v1/spans/start", apiKey, input.context, childCommon)
+  const childTerminal = childStarted && await emitLifecycle(
+    input.status === "failed" ? "/api/v1/spans/fail" : "/api/v1/spans/complete",
+    apiKey,
+    input.context,
+    { ...childCommon, endTime },
+  )
   const terminal = await emitLifecycle(
     input.status === "failed" ? "/api/v1/spans/fail" : "/api/v1/spans/complete",
     apiKey,
     input.context,
     {
       ...common,
-      endTime: new Date().toISOString(),
+      endTime,
       ...(input.status === "failed" ? { errorCode: "MARKDOWN_OPERATION_FAILED", errorMessage: `Markdown ${input.operation} failed.` } : {}),
     },
   )
   return {
     traceId: input.context.traceId,
     spanId: input.context.spanId,
-    status: started && terminal ? "connected" as const : "degraded" as const,
+    status: started && childStarted && childTerminal && terminal ? "connected" as const : "degraded" as const,
   }
 }
